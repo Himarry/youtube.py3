@@ -1,6 +1,6 @@
 # インストールガイド
 
-YouTube.py2のインストール方法と初期設定について詳しく説明します。
+YouTube.py3のインストール方法と初期設定について詳しく説明します。
 
 ## 📋 システム要件
 
@@ -24,13 +24,13 @@ YouTube.py2のインストール方法と初期設定について詳しく説明
 
 ```bash
 # 最新版をインストール
-pip install youtube-py2
+pip install youtube-py3
 
 # 特定のバージョンをインストール
-pip install youtube-py2==1.0.0
+pip install youtube-py3==1.0.0
 
 # 開発版をインストール（非推奨）
-pip install youtube-py2 --pre
+pip install youtube-py3 --pre
 ```
 
 ### 方法2: GitHubから直接インストール
@@ -38,7 +38,7 @@ pip install youtube-py2 --pre
 最新の開発版を使用したい場合：
 
 ```bash
-pip install git+https://github.com/yourusername/youtube-py2.git
+pip install git+https://github.com/yourusername/youtube-py3.git
 ```
 
 ### 方法3: ソースコードからインストール
@@ -47,8 +47,8 @@ pip install git+https://github.com/yourusername/youtube-py2.git
 
 ```bash
 # リポジトリをクローン
-git clone https://github.com/yourusername/youtube-py2.git
-cd youtube-py2
+git clone https://github.com/yourusername/youtube-py3.git
+cd youtube-py3
 
 # 開発モードでインストール
 pip install -e .
@@ -59,7 +59,7 @@ pip install .
 
 ## 🔑 APIキーの取得と設定
 
-YouTube.py2を使用するには、YouTube Data API v3のAPIキーが必要です。
+YouTube.py3を使用するには、YouTube Data API v3のAPIキーが必要です。
 
 ### Step 1: Google Cloud Consoleでプロジェクトを作成
 
@@ -186,15 +186,15 @@ api_key = config['youtube_api_key']
 ```python
 # ライブラリのインポートを確認
 try:
-    from youtube_py2 import YouTubeAPI
+    from youtube_py3 import YouTubeAPI
     print("✅ インストール成功: ライブラリを正常にインポートできました")
 except ImportError as e:
     print(f"❌ インストール失敗: {e}")
 
 # バージョン確認
 try:
-    import youtube_py2
-    print(f"✅ バージョン: {youtube_py2.__version__}")
+    import youtube_py3
+    print(f"✅ バージョン: {youtube_py3.__version__}")
 except AttributeError:
     print("⚠️ バージョン情報が取得できません")
 ```
@@ -202,7 +202,7 @@ except AttributeError:
 ### APIキーの確認
 ```python
 import os
-from youtube_py2 import YouTubeAPI, YouTubeAPIError
+from youtube_py3 import YouTubeAPI, YouTubeAPIError
 
 try:
     # 環境変数からAPIキーを取得
@@ -229,7 +229,7 @@ except Exception as e:
 ### 完全な動作確認
 ```python
 import os
-from youtube_py2 import YouTubeAPI
+from youtube_py3 import YouTubeAPI
 
 def test_installation():
     """インストールの完全テスト"""
@@ -239,7 +239,7 @@ def test_installation():
     
     # 1. ライブラリのインポート確認
     try:
-        from youtube_py2 import YouTubeAPI, YouTubeAPIError
+        from youtube_py3 import YouTubeAPI, YouTubeAPIError
         print("✅ 1. ライブラリインポート: 成功")
     except ImportError as e:
         print(f"❌ 1. ライブラリインポート: 失敗 - {e}")
@@ -283,19 +283,19 @@ if __name__ == "__main__":
 
 ### よくある問題
 
-#### 1. `ModuleNotFoundError: No module named 'youtube_py2'`
+#### 1. `ModuleNotFoundError: No module named 'youtube_py3'`
 **原因**: ライブラリがインストールされていない
 **解決方法**: 
 ```bash
-pip install youtube-py2
+pip install youtube-py3
 ```
 
 #### 2. `ImportError: cannot import name 'YouTubeAPI'`
 **原因**: 古いバージョンまたは不完全なインストール
 **解決方法**: 
 ```bash
-pip uninstall youtube-py2
-pip install youtube-py2
+pip uninstall youtube-py3
+pip install youtube-py3
 ```
 
 #### 3. `YouTubeAPIError: APIキーが必要です`
@@ -334,17 +334,17 @@ logger.setLevel(logging.DEBUG)
 
 ### 最新版への更新
 ```bash
-pip install --upgrade youtube-py2
+pip install --upgrade youtube-py3
 ```
 
 ### バージョン確認
 ```bash
-pip show youtube-py2
+pip show youtube-py3
 ```
 
 ### 特定バージョンへのダウングレード
 ```bash
-pip install youtube-py2==1.0.0
+pip install youtube-py3==1.0.0
 ```
 
 ## 📚 次のステップ

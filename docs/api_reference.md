@@ -1,6 +1,6 @@
 # APIリファレンス
 
-YouTube.py2の全メソッドの詳細な説明です。全88個のメソッドを機能別に分類して説明します。
+YouTube.py3の全メソッドの詳細な説明です。実装済みのメソッドを機能別に分類して説明します。
 
 ## 📚 目次
 
@@ -13,7 +13,6 @@ YouTube.py2の全メソッドの詳細な説明です。全88個のメソッド�
 - [動画管理](#動画管理)
 - [ライブストリーミング](#ライブストリーミング)
 - [字幕管理](#字幕管理)
-- [メンバーシップ管理](#メンバーシップ管理)
 - [サブスクリプション管理](#サブスクリプション管理)
 - [システム情報](#システム情報)
 - [エラーハンドリング](#エラーハンドリング)
@@ -38,7 +37,7 @@ YouTube Data API v3のメインクラス。
 
 **使用例:**
 ```python
-from youtube_py2 import YouTubeAPI
+from youtube_py3 import YouTubeAPI
 import os
 
 api_key = os.getenv('YOUTUBE_API_KEY')
@@ -52,6 +51,23 @@ class YouTubeAPIError(Exception)
 ```
 
 YouTube API関連のエラー例外クラス。
+
+**メソッド:**
+- `is_quota_exceeded()`: クォータ超過エラーかどうかを判定
+- `is_api_key_invalid()`: APIキー無効エラーかどうかを判定
+- `is_not_found()`: リソースが見つからないエラーかどうかを判定
+- `is_forbidden()`: アクセス権限エラーかどうかを判定
+- `get_suggested_action()`: エラーに対する推奨アクションを取得
+
+**使用例:**
+```python
+try:
+    video = yt.get_video_info("invalid_id")
+except YouTubeAPIError as e:
+    print(f"エラー: {e}")
+    if e.is_quota_exceeded():
+        print("推奨アクション:", e.get_suggested_action())
+```
 
 ---
 
@@ -143,11 +159,8 @@ def get_channel_statistics_only(channel_id: str) -> dict
 **戻り値:**
 - `dict`: 統計情報のみ
 
-**使用例:**
-```python
-stats = yt.get_channel_statistics_only("UC_x5XG1OV2P6uZZ5FSM9Ttw")
-print(f"登録者数: {stats['subscriberCount']}")
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ### get_video_statistics_only()
 
@@ -163,11 +176,8 @@ def get_video_statistics_only(video_id: str) -> dict
 **戻り値:**
 - `dict`: 統計情報のみ
 
-**使用例:**
-```python
-stats = yt.get_video_statistics_only("dQw4w9WgXcQ")
-print(f"再生回数: {stats['viewCount']}")
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ---
 
@@ -313,123 +323,6 @@ videos = yt.get_playlist_videos("PLxyz123", max_results=100)
 print(f"プレイリストに{len(videos)}個の動画があります")
 ```
 
-### create_playlist()
-
-```python
-def create_playlist(title: str, description: str = "", privacy_status: str = "private") -> dict
-```
-
-プレイリストを作成します。
-
-**パラメータ:**
-- `title` (str): プレイリストタイトル
-- `description` (str): プレイリスト説明（デフォルト: ""）
-- `privacy_status` (str): プライバシー設定（デフォルト: 'private'）
-  - `'private'`: 非公開
-  - `'public'`: 公開
-  - `'unlisted'`: 限定公開
-
-**戻り値:**
-- `dict`: 作成されたプレイリスト情報
-
-**使用例:**
-```python
-playlist = yt.create_playlist(
-    title="お気に入りの動画",
-    description="面白い動画のコレクション",
-    privacy_status="public"
-)
-print(f"プレイリストID: {playlist['id']}")
-```
-
-### update_playlist()
-
-```python
-def update_playlist(playlist_id: str, title: str = None, description: str = None, privacy_status: str = None) -> dict
-```
-
-プレイリストを更新します。
-
-**パラメータ:**
-- `playlist_id` (str): プレイリストID
-- `title` (str): 新しいタイトル（オプション）
-- `description` (str): 新しい説明（オプション）
-- `privacy_status` (str): 新しいプライバシー設定（オプション）
-
-**戻り値:**
-- `dict`: 更新結果
-
-**使用例:**
-```python
-result = yt.update_playlist(
-    "PLxyz123",
-    title="更新されたタイトル",
-    description="新しい説明"
-)
-```
-
-### delete_playlist()
-
-```python
-def delete_playlist(playlist_id: str) -> bool
-```
-
-プレイリストを削除します。
-
-**パラメータ:**
-- `playlist_id` (str): プレイリストID
-
-**戻り値:**
-- `bool`: 削除成功フラグ
-
-**使用例:**
-```python
-if yt.delete_playlist("PLxyz123"):
-    print("プレイリストを削除しました")
-```
-
-### add_video_to_playlist()
-
-```python
-def add_video_to_playlist(playlist_id: str, video_id: str, position: int = None) -> dict
-```
-
-プレイリストに動画を追加します。
-
-**パラメータ:**
-- `playlist_id` (str): プレイリストID
-- `video_id` (str): 動画ID
-- `position` (int): 挿入位置（オプション）
-
-**戻り値:**
-- `dict`: 追加結果
-
-**使用例:**
-```python
-result = yt.add_video_to_playlist("PLxyz123", "dQw4w9WgXcQ", position=0)
-print("動画をプレイリストに追加しました")
-```
-
-### remove_video_from_playlist()
-
-```python
-def remove_video_from_playlist(playlist_item_id: str) -> bool
-```
-
-プレイリストから動画を削除します。
-
-**パラメータ:**
-- `playlist_item_id` (str): プレイリストアイテムID
-
-**戻り値:**
-- `bool`: 削除成功フラグ
-
-**使用例:**
-```python
-if yt.remove_video_from_playlist("PLIxyz123"):
-    print("動画をプレイリストから削除しました")
-```
-
 ### get_channel_playlists()
 
 ```python
@@ -512,130 +405,6 @@ for comment in comments:
             print(f"  返信: {reply_snippet['textDisplay']}")
 ```
 
-### get_comment_details()
-
-```python
-def get_comment_details(comment_id: str) -> dict
-```
-
-コメント詳細を取得します。
-
-**パラメータ:**
-- `comment_id` (str): コメントID
-
-**戻り値:**
-- `dict`: コメント詳細情報
-
-**使用例:**
-```python
-comment = yt.get_comment_details("UgxKREWxxx")
-print(f"コメント: {comment['snippet']['textDisplay']}")
-```
-
-### post_comment_thread()
-
-```python
-def post_comment_thread(video_id: str, text: str, channel_id: str = None) -> dict
-```
-
-新しいコメントスレッドを投稿します。
-
-**パラメータ:**
-- `video_id` (str): 動画ID（動画へのコメントの場合）
-- `text` (str): コメントテキスト
-- `channel_id` (str): チャンネルID（チャンネルへのコメントの場合）
-
-**戻り値:**
-- `dict`: 投稿結果
-
-**使用例:**
-```python
-result = yt.post_comment_thread("dQw4w9WgXcQ", "素晴らしい動画です！")
-print("コメントを投稿しました")
-```
-
-### post_comment_reply()
-
-```python
-def post_comment_reply(parent_comment_id: str, text: str) -> dict
-```
-
-コメントに返信します。
-
-**パラメータ:**
-- `parent_comment_id` (str): 親コメントID
-- `text` (str): 返信テキスト
-
-**戻り値:**
-- `dict`: 投稿結果
-
-**使用例:**
-```python
-result = yt.post_comment_reply("UgxKREWxxx", "同感です！")
-print("返信を投稿しました")
-```
-
-### update_comment()
-
-```python
-def update_comment(comment_id: str, text: str) -> dict
-```
-
-コメントを更新します。
-
-**パラメータ:**
-- `comment_id` (str): コメントID
-- `text` (str): 新しいテキスト
-
-**戻り値:**
-- `dict`: 更新結果
-
-**使用例:**
-```python
-result = yt.update_comment("UgxKREWxxx", "更新されたコメントです")
-print("コメントを更新しました")
-```
-
-### delete_comment()
-
-```python
-def delete_comment(comment_id: str) -> bool
-```
-
-コメントを削除します。
-
-**パラメータ:**
-- `comment_id` (str): コメントID
-
-**戻り値:**
-- `bool`: 削除成功フラグ
-
-**使用例:**
-```python
-if yt.delete_comment("UgxKREWxxx"):
-    print("コメントを削除しました")
-```
-
-### mark_comment_as_spam()
-
-```python
-def mark_comment_as_spam(comment_id: str) -> bool
-```
-
-コメントをスパムとしてマークします。
-
-**パラメータ:**
-- `comment_id` (str): コメントID
-
-**戻り値:**
-- `bool`: 成功フラグ
-
-**使用例:**
-```python
-if yt.mark_comment_as_spam("UgxKREWxxx"):
-    print("コメントをスパムとしてマークしました")
-```
-
 ---
 
 ## チャンネル管理
@@ -705,32 +474,6 @@ for activity in activities:
     print(f"アクティビティ: {activity['snippet']['type']}")
 ```
 
-### update_channel()
-
-```python
-def update_channel(channel_id: str, title: str = None, description: str = None, keywords: str = None) -> dict
-```
-
-チャンネル情報を更新します。
-
-**パラメータ:**
-- `channel_id` (str): チャンネルID
-- `title` (str): 新しいタイトル（オプション）
-- `description` (str): 新しい説明（オプション）
-- `keywords` (str): 新しいキーワード（オプション）
-
-**戻り値:**
-- `dict`: 更新結果
-
-**使用例:**
-```python
-result = yt.update_channel(
-    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
-    title="新しいチャンネル名",
-    description="チャンネルの新しい説明"
-)
-```
-
 ---
 
 ## 動画管理
@@ -777,127 +520,6 @@ def get_video_categories(region_code: str = "JP") -> list
 categories = yt.get_video_categories()
 for category in categories:
     print(f"- {category['snippet']['title']}")
-```
-
-### upload_video()
-
-```python
-def upload_video(title: str, description: str, tags: list = None, category_id: str = "22", privacy_status: str = "private", video_file = None) -> dict
-```
-
-動画をアップロードします。
-
-**パラメータ:**
-- `title` (str): 動画タイトル
-- `description` (str): 動画説明
-- `tags` (list): タグのリスト
-- `category_id` (str): カテゴリID（デフォルト: "22"）
-- `privacy_status` (str): プライバシー設定（デフォルト: 'private'）
-- `video_file`: 動画ファイル
-
-**戻り値:**
-- `dict`: アップロード結果
-
-**使用例:**
-```python
-with open('video.mp4', 'rb') as video_file:
-    result = yt.upload_video(
-        title="テスト動画",
-        description="テスト用の動画です",
-        tags=["テスト", "動画"],
-        privacy_status="unlisted",
-        video_file=video_file
-    )
-print(f"動画ID: {result['id']}")
-```
-
-### update_video()
-
-```python
-def update_video(video_id: str, title: str = None, description: str = None, tags: list = None, category_id: str = None) -> dict
-```
-
-動画情報を更新します。
-
-**パラメータ:**
-- `video_id` (str): 動画ID
-- `title` (str): 新しいタイトル（オプション）
-- `description` (str): 新しい説明（オプション）
-- `tags` (list): 新しいタグ（オプション）
-- `category_id` (str): 新しいカテゴリID（オプション）
-
-**戻り値:**
-- `dict`: 更新結果
-
-**使用例:**
-```python
-result = yt.update_video(
-    "dQw4w9WgXcQ",
-    title="更新されたタイトル",
-    description="新しい説明"
-)
-```
-
-### delete_video()
-
-```python
-def delete_video(video_id: str) -> bool
-```
-
-動画を削除します。
-
-**パラメータ:**
-- `video_id` (str): 動画ID
-
-**戻り値:**
-- `bool`: 削除成功フラグ
-
-**使用例:**
-```python
-if yt.delete_video("dQw4w9WgXcQ"):
-    print("動画を削除しました")
-```
-
-### rate_video()
-
-```python
-def rate_video(video_id: str, rating: str) -> bool
-```
-
-動画を評価します。
-
-**パラメータ:**
-- `video_id` (str): 動画ID
-- `rating` (str): 評価（'like', 'dislike', 'none'）
-
-**戻り値:**
-- `bool`: 評価成功フラグ
-
-**使用例:**
-```python
-if yt.rate_video("dQw4w9WgXcQ", "like"):
-    print("動画にいいねしました")
-```
-
-### set_video_thumbnail()
-
-```python
-def set_video_thumbnail(video_id: str, image_file) -> dict
-```
-
-動画のサムネイルを設定します。
-
-**パラメータ:**
-- `video_id` (str): 動画ID
-- `image_file`: サムネイル画像ファイル
-
-**戻り値:**
-- `dict`: 設定結果
-
-**使用例:**
-```python
-with open('thumbnail.jpg', 'rb') as thumb_file:
-    result = yt.set_video_thumbnail("dQw4w9WgXcQ", thumb_file)
 ```
 
 ---
@@ -967,12 +589,8 @@ def get_video_captions(video_id: str) -> list
 **戻り値:**
 - `list`: 字幕情報のリスト
 
-**使用例:**
-```python
-captions = yt.get_video_captions("dQw4w9WgXcQ")
-for caption in captions:
-    print(f"言語: {caption['snippet']['language']}")
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ### download_caption()
 
@@ -989,12 +607,8 @@ def download_caption(caption_id: str, format: str = "srt") -> str
 **戻り値:**
 - `str`: 字幕テキスト
 
-**使用例:**
-```python
-caption_text = yt.download_caption("caption_id", format="srt")
-with open("subtitle.srt", "w", encoding="utf-8") as f:
-    f.write(caption_text)
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ### upload_caption()
 
@@ -1013,11 +627,8 @@ def upload_caption(video_id: str, language: str, name: str, caption_file) -> dic
 **戻り値:**
 - `dict`: アップロード結果
 
-**使用例:**
-```python
-with open("subtitle.srt", "rb") as caption_file:
-    result = yt.upload_caption("dQw4w9WgXcQ", "ja", "日本語字幕", caption_file)
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ---
 
@@ -1039,52 +650,8 @@ def get_subscriptions(channel_id: str = None, mine: bool = False, max_results: i
 **戻り値:**
 - `list`: サブスクリプション情報のリスト
 
-**使用例:**
-```python
-subscriptions = yt.get_subscriptions(mine=True)
-for sub in subscriptions:
-    print(f"チャンネル: {sub['snippet']['title']}")
-```
-
-### subscribe_to_channel()
-
-```python
-def subscribe_to_channel(channel_id: str) -> dict
-```
-
-チャンネルをサブスクライブします。
-
-**パラメータ:**
-- `channel_id` (str): サブスクライブするチャンネルID
-
-**戻り値:**
-- `dict`: サブスクライブ結果
-
-**使用例:**
-```python
-result = yt.subscribe_to_channel("UC_x5XG1OV2P6uZZ5FSM9Ttw")
-print("チャンネルをサブスクライブしました")
-```
-
-### unsubscribe_from_channel()
-
-```python
-def unsubscribe_from_channel(subscription_id: str) -> bool
-```
-
-チャンネルのサブスクライブを解除します。
-
-**パラメータ:**
-- `subscription_id` (str): サブスクリプションID
-
-**戻り値:**
-- `bool`: 解除成功フラグ
-
-**使用例:**
-```python
-if yt.unsubscribe_from_channel("subscription_id"):
-    print("サブスクライブを解除しました")
-```
+**注意:**
+このメソッドは現在実装中です。
 
 ---
 
@@ -1160,9 +727,29 @@ try:
     video = yt.get_video_info("invalid_video_id")
 except YouTubeAPIError as e:
     print(f"YouTube APIエラー: {e}")
+    
+    # エラーの種類に応じた処理
+    if e.is_quota_exceeded():
+        print("推奨アクション:", e.get_suggested_action())
+    elif e.is_api_key_invalid():
+        print("推奨アクション:", e.get_suggested_action())
+    elif e.is_not_found():
+        print("推奨アクション:", e.get_suggested_action())
+        
 except Exception as e:
     print(f"予期しないエラー: {e}")
 ```
+
+### YouTubeAPIErrorのメソッド
+
+**エラー判定メソッド:**
+- `is_quota_exceeded()`: クォータ超過エラーかどうか
+- `is_api_key_invalid()`: APIキー無効エラーかどうか
+- `is_not_found()`: リソースが見つからないエラーかどうか
+- `is_forbidden()`: アクセス権限エラーかどうか
+
+**ヘルパーメソッド:**
+- `get_suggested_action()`: エラーに対する推奨アクションを取得
 
 ### よくあるエラーとその対処法
 
@@ -1171,8 +758,8 @@ except Exception as e:
 try:
     yt = YouTubeAPI("")  # 空のAPIキー
 except YouTubeAPIError as e:
-    # "APIキーが必要です。Google Cloud Consoleで個別に取得してください。"
-    print(f"エラー: {e}")
+    if e.is_api_key_invalid():
+        print("推奨アクション:", e.get_suggested_action())
 ```
 
 #### 2. クォータ制限
@@ -1180,10 +767,8 @@ except YouTubeAPIError as e:
 try:
     videos = yt.search_videos("Python", max_results=1000)
 except YouTubeAPIError as e:
-    if "quota" in str(e).lower():
-        print("API使用量制限に達しました。時間をおいて再試行してください。")
-    else:
-        print(f"エラー: {e}")
+    if e.is_quota_exceeded():
+        print("推奨アクション:", e.get_suggested_action())
 ```
 
 #### 3. リソースが見つからない
@@ -1191,13 +776,11 @@ except YouTubeAPIError as e:
 try:
     video = yt.get_video_info("nonexistent_video_id")
 except YouTubeAPIError as e:
-    if "見つかりません" in str(e):
-        print("指定された動画は存在しません。")
-    else:
-        print(f"エラー: {e}")
+    if e.is_not_found():
+        print("推奨アクション:", e.get_suggested_action())
 ```
 
 ---
 
 **最終更新**: 2024年12月
-**関連ドキュメント**: [README](README.md) | [使用例集](examples/) | [トラブルシューティング](troubleshooting.md)
+**関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)

@@ -1,6 +1,6 @@
 # トラブルシューティングガイド
 
-YouTube.py2の使用中に発生する可能性のある問題と、その解決方法を詳しく説明します。
+YouTube.py3の使用中に発生する可能性のある問題と、その解決方法を詳しく説明します。
 
 ## 📋 目次
 
@@ -19,11 +19,11 @@ YouTube.py2の使用中に発生する可能性のある問題と、その解決
 
 ## インストール関連の問題
 
-### 1. `ModuleNotFoundError: No module named 'youtube_py2'`
+### 1. `ModuleNotFoundError: No module named 'youtube_py3'`
 
 **症状:**
 ```
-ModuleNotFoundError: No module named 'youtube_py2'
+ModuleNotFoundError: No module named 'youtube_py3'
 ```
 
 **原因:**
@@ -35,7 +35,7 @@ ModuleNotFoundError: No module named 'youtube_py2'
 
 #### A. ライブラリをインストール
 ```bash
-pip install youtube-py2
+pip install youtube-py3
 ```
 
 #### B. 仮想環境の確認
@@ -57,7 +57,7 @@ which python
 python --version
 
 # インストール場所を確認
-pip show youtube-py2
+pip show youtube-py3
 ```
 
 ### 2. 依存関係のエラー
@@ -81,7 +81,7 @@ pip install --upgrade pip setuptools wheel
 #### B. 依存関係を明示的にインストール
 ```bash
 pip install --upgrade google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
-pip install youtube-py2
+pip install youtube-py3
 ```
 
 #### C. 仮想環境を新規作成
@@ -97,7 +97,7 @@ Scripts\activate
 source bin/activate
 
 # クリーンインストール
-pip install youtube-py2
+pip install youtube-py3
 ```
 
 ### 3. 権限エラー
@@ -115,7 +115,7 @@ PermissionError: [Errno 13] Permission denied
 
 #### A. ユーザー領域にインストール
 ```bash
-pip install --user youtube-py2
+pip install --user youtube-py3
 ```
 
 #### B. 仮想環境を使用
@@ -127,10 +127,10 @@ python -m venv youtube_env
 #### C. 管理者権限でインストール（非推奨）
 ```bash
 # Windows（管理者として実行）
-pip install youtube-py2
+pip install youtube-py3
 
 # macOS/Linux
-sudo pip install youtube-py2
+sudo pip install youtube-py3
 ```
 
 ---
@@ -217,7 +217,7 @@ print(f"APIキー検証: {message}")
 
 #### B. APIキーのテスト
 ```python
-from youtube_py2 import YouTubeAPI, YouTubeAPIError
+from youtube_py3 import YouTubeAPI, YouTubeAPIError
 
 def test_api_key(api_key):
     """APIキーの有効性をテスト"""
@@ -1119,12 +1119,12 @@ def setup_debug_logging():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler('youtube_py2_debug.log', encoding='utf-8')
+            logging.FileHandler('youtube_py3_debug.log', encoding='utf-8')
         ]
     )
     
-    # YouTube.py2特有のログ
-    youtube_logger = logging.getLogger('youtube_py2')
+    # YouTube.py3特有のログ
+    youtube_logger = logging.getLogger('youtube_py3')
     youtube_logger.setLevel(logging.DEBUG)
     
     # Google APIクライアントのログ
@@ -1255,9 +1255,9 @@ debugger.print_debug_summary()
 ## サポートとヘルプ
 
 ### 技術サポート
-- **GitHub Issues**: [プロジェクトページ](https://github.com/yourusername/youtube-py2/issues)
-- **Discord**: [コミュニティサーバー](https://discord.gg/youtube-py2)
-- **Email**: support@youtube-py2.com
+- **GitHub Issues**: [プロジェクトページ](https://github.com/yourusername/youtube-py3/issues)
+- **Discord**: [コミュニティサーバー](https://discord.gg/youtube-py3)
+- **Email**: support@youtube-py3.com
 
 ### 関連リソース
 - [YouTube Data API v3 公式ドキュメント](https://developers.google.com/youtube/v3)
