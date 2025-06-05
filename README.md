@@ -1,4 +1,4 @@
-# YouTube.py2
+# youtube.py2
 
 YouTube Data API v3の主要機能を簡略化・ラップして使いやすくするPythonライブラリです。
 
