@@ -1,6 +1,6 @@
-# YouTube.py2 完全ドキュメント
+# YouTube.py3 完全ドキュメント
 
-YouTube.py2は、YouTube Data API v3を簡単に使用するためのPythonラッパーライブラリです。複雑なAPIの詳細を隠蔽し、初心者でも使いやすいインターフェースを提供します。
+YouTube.py3は、YouTube Data API v3を簡単に使用するためのPythonラッパーライブラリです。複雑なAPIの詳細を隠蔽し、初心者でも使いやすいインターフェースを提供します。
 
 ## 📚 ドキュメント一覧
 
@@ -48,14 +48,14 @@ YouTube.py2は、YouTube Data API v3を簡単に使用するためのPythonラ�
 ### 2. インストール
 
 ```bash
-pip install youtube-py2
+pip install youtube-py3
 ```
 
 ### 3. 基本的な使用例
 
 ```python
 import os
-from youtube_py2 import YouTubeAPI
+from youtube_py3 import YouTubeAPI
 
 # 環境変数からAPIキーを取得（推奨）
 api_key = os.getenv('YOUTUBE_API_KEY')
@@ -145,9 +145,9 @@ for video in videos:
 
 ## 📞 サポート
 
-- **Issue**: [GitHub Issues](https://github.com/yourusername/youtube-py2/issues)
-- **Discord**: [コミュニティサーバー](https://discord.gg/youtube-py2)
-- **Email**: support@youtube-py2.com
+- **GitHub Issues**: [プロジェクトページ](https://github.com/yourusername/youtube-py3/issues)
+- **Discord**: [コミュニティサーバー](https://discord.gg/youtube-py3)
+- **Email**: support@youtube-py3.com
 
 ---
 
