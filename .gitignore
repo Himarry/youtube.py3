@@ -1,5 +1,6 @@
 # 環境変数ファイル
 .env
+setup.py
 
 # APIキー関連
 *api_key*
