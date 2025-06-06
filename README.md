@@ -65,35 +65,5 @@ for video in videos:
 3. YouTube Data API v3を有効化
 4. 認証情報からAPIキーを作成
 
-## 🛠️ 開発
-
-### 開発環境のセットアップ
-
-```bash
-git clone https://github.com/Himarry/youtube.py3.git
-cd youtube.py3
-pip install -e .[dev]
-```
-
-### テスト実行
-
-```bash
-pytest tests/
-```
-
-## 📄 ライセンス
-
-MIT License - 詳細は[LICENSE](LICENSE)ファイルをご覧ください。
-
-## 🤝 コントリビューション
-
-プルリクエストやイシューの報告を歓迎します！
-
-## 📞 サポート
-
-- GitHub Issues: [Issues](https://github.com/Himarry/youtube.py3/issues)
-- Email: yanase.ui.prv@gmail.com
-
----
-
+#
 **注意**: このライブラリはYouTube Data API v3の非公式ラッパーです。Google/YouTubeとは関係ありません。
