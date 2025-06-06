@@ -4,6 +4,8 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/youtube-py3.svg)](https://pypi.org/project/youtube-py3/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[🇺🇸 English](README_en.md) | 🇯🇵 日本語
+
 YouTube Data API v3を簡単に使用するためのPythonラッパーライブラリです。
 
 ## 🎯 特徴
