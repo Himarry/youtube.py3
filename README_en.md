@@ -6,13 +6,6 @@
 
 A Python wrapper library for easy use of YouTube Data API v3.
 
-## 🎯 Features
-
-- **Beginner-friendly**: Simplified complex API parameters
-- **Rich functionality**: Video, channel, playlist, and comment management
-- **Automated processing**: Pagination and error handling
-- **Japanese support**: Easy-to-understand method names and descriptions
-
 ## 🚀 Quick Start
 
 ### Installation
