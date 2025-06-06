@@ -704,6 +704,128 @@ class YouTubeAPI:
         
         return all_items
 
+    # ======== 簡略化メソッド（通常のリスト取得版） ========
+
+    def get_channel_playlists(self, channel_id, max_results=50):
+        """チャンネルのプレイリスト一覧を取得（簡略版）
+        
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: プレイリスト一覧
+        """
+        return self.paginate_all_results(
+            self.search_playlists_paginated,
+            f"channel:{channel_id}",
+            max_total_results=max_results
+        )
+
+    def search_all_videos(self, query, max_results=500):
+        """動画を全件検索（簡略版）
+        
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: 検索結果
+        """
+        return self.paginate_all_results(
+            self.search_videos_paginated,
+            query,
+            max_total_results=max_results
+        )
+
+    def get_all_channel_videos(self, channel_id, max_results=500):
+        """チャンネルの全動画を取得（簡略版）
+        
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: 動画一覧
+        """
+        return self.paginate_all_results(
+            self.get_channel_videos_paginated,
+            channel_id,
+            max_total_results=max_results
+        )
+
+    def get_all_playlist_videos(self, playlist_id, max_results=500):
+        """プレイリストの全動画を取得（簡略版）
+        
+        Args:
+            playlist_id (str): プレイリストID
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: 動画一覧
+        """
+        return self.paginate_all_results(
+            self.get_playlist_videos_paginated,
+            playlist_id,
+            max_total_results=max_results
+        )
+
+    def get_all_comments(self, video_id, max_results=1000):
+        """動画の全コメントを取得（簡略版）
+        
+        Args:
+            video_id (str): 動画ID
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: コメント一覧
+        """
+        return self.paginate_all_results(
+            self.get_comments_paginated,
+            video_id,
+            max_total_results=max_results
+        )
+
+    def search_playlists_paginated(self, query, max_results=None, order="relevance", page_token=None, **filters):
+        """プレイリスト検索（ページネーション対応）
+        
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数
+            order (str): ソート順序
+            page_token (str): ページトークン
+            **filters: 追加フィルター
+        
+        Returns:
+            dict: 検索結果とページ情報
+        """
+        if max_results is None:
+            max_results = 50
+        
+        max_results = min(max_results, 50)
+        
+        params = {
+            'part': 'snippet',
+            'q': query,
+            'type': 'playlist',
+            'maxResults': max_results,
+            'order': order,
+            **filters
+        }
+        
+        if page_token:
+            params['pageToken'] = page_token
+        
+        request = self.youtube.search().list(**params)
+        response = self._execute_request(request)
+        
+        return {
+            'items': response.get('items', []),
+            'nextPageToken': response.get('nextPageToken'),
+            'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
+            'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
+        }
+
     # ======== 統計情報取得メソッド ========
 
     def get_video_statistics_only(self, video_id):
