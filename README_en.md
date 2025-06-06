@@ -63,35 +63,6 @@ For detailed documentation, please see the [docs/](docs/) folder:
 3. Enable YouTube Data API v3
 4. Create an API key from credentials
 
-## 🛠️ Development
-
-### Development Environment Setup
-
-```bash
-git clone https://github.com/Himarry/youtube.py3.git
-cd youtube.py3
-pip install -e .[dev]
-```
-
-### Running Tests
-
-```bash
-pytest tests/
-```
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Pull requests and issue reports are welcome!
-
-## 📞 Support
-
-- GitHub Issues: [Issues](https://github.com/Himarry/youtube.py3/issues)
-- Email: yanase.ui.prv@gmail.com
-
----
+#
 
 **Note**: This library is an unofficial wrapper for YouTube Data API v3. It is not affiliated with Google/YouTube.

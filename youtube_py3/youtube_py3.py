@@ -222,6 +222,773 @@ class YouTubeAPI:
                 "APIキーが正しいか確認してください。"
             )
 
+    def get_channel_activities_all(self, channel_id, max_results=None):
+        """チャンネルのアクティビティを全て取得（ページネーション対応）
+
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全アクティビティのリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.activities().list(
+                part="snippet,contentDetails",
+                channelId=channel_id,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_subscriptions_all(self, channel_id=None, mine=False, max_results=None):
+        """サブスクリプション一覧を全て取得（ページネーション対応）
+
+        Args:
+            channel_id (str): チャンネルID（オプション）
+            mine (bool): 自分のサブスクリプションを取得するか
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全サブスクリプションのリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet,contentDetails",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+
+            if mine:
+                params["mine"] = True
+            elif channel_id:
+                params["channelId"] = channel_id
+            else:
+                raise YouTubeAPIError("channel_id または mine=True を指定してください")
+
+            return self.youtube.subscriptions().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def search_all_with_pagination(
+        self,
+        query,
+        search_type="video,channel,playlist",
+        max_results=None,
+        order="relevance",
+    ):
+        """全体検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード
+            search_type (str): 検索対象
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: 全検索結果のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                q=query,
+                type=search_type,
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def search_channels_all(self, query, max_results=None, order="relevance"):
+        """チャンネル検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: 全検索結果のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                q=query,
+                type="channel",
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def search_playlists_all(self, query, max_results=None, order="relevance"):
+        """プレイリスト検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: 全検索結果のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                q=query,
+                type="playlist",
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_video_comments_with_replies_all(self, video_id, max_results=None):
+        """動画のコメントを返信付きで全て取得（ページネーション対応）
+
+        Args:
+            video_id (str): 動画ID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全コメント（返信付き）のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.commentThreads().list(
+                part="snippet,replies",
+                videoId=video_id,
+                maxResults=100,  # コメントは100件まで
+                order="time",
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_my_videos_all(self, max_results=None, order="date"):
+        """自分の動画を全て取得（ページネーション対応）
+
+        Args:
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: 自分の全動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                forMine=True,
+                type="video",
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_liked_videos_all(self, max_results=None):
+        """自分がいいねした動画を全て取得（ページネーション対応）
+
+        Args:
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: いいねした全動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId="LL",  # Liked videosプレイリスト
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_watch_later_videos_all(self, max_results=None):
+        """後で見る動画を全て取得（ページネーション対応）
+
+        Args:
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 後で見る全動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId="WL",  # Watch Laterプレイリスト
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_watch_history_all(self, max_results=None):
+        """視聴履歴を全て取得（ページネーション対応）
+
+        Args:
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全視聴履歴のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId="HL",  # History Listプレイリスト
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_my_playlists_all(self, max_results=None):
+        """自分のプレイリストを全て取得（ページネーション対応）
+
+        Args:
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 自分の全プレイリストのリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlists().list(
+                part="snippet,contentDetails",
+                mine=True,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_related_videos_all(self, video_id, max_results=None):
+        """関連動画を全て取得（ページネーション対応）
+
+        Args:
+            video_id (str): 基準となる動画ID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 関連動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                relatedToVideoId=video_id,
+                type="video",
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_trending_videos_all(
+        self, region_code="JP", category_id=None, max_results=None
+    ):
+        """トレンド動画を全て取得（ページネーション対応）
+
+        Args:
+            region_code (str): 地域コード
+            category_id (str): カテゴリID（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: トレンド動画のリスト
+        """
+        # トレンド動画は人気動画と同じエンドポイントを使用
+        return self.get_popular_videos_all(region_code, category_id, max_results)
+
+    def get_videos_by_category_all(
+        self, category_id, region_code="JP", max_results=None
+    ):
+        """カテゴリ別動画を全て取得（ページネーション対応）
+
+        Args:
+            category_id (str): カテゴリID
+            region_code (str): 地域コード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: カテゴリ別動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.videos().list(
+                part="snippet,statistics",
+                chart="mostPopular",
+                regionCode=region_code,
+                videoCategoryId=category_id,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_live_videos_all(self, region_code="JP", max_results=None):
+        """ライブ配信中の動画を全て取得（ページネーション対応）
+
+        Args:
+            region_code (str): 地域コード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: ライブ配信中の動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                eventType="live",
+                type="video",
+                regionCode=region_code,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_upcoming_videos_all(self, region_code="JP", max_results=None):
+        """予定されている配信を全て取得（ページネーション対応）
+
+        Args:
+            region_code (str): 地域コード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 予定配信のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                eventType="upcoming",
+                type="video",
+                regionCode=region_code,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_videos_by_location_all(
+        self, location, location_radius="5km", max_results=None
+    ):
+        """位置情報で動画を全て検索（ページネーション対応）
+
+        Args:
+            location (str): 緯度,経度 (例: "37.42307,-122.08427")
+            location_radius (str): 検索半径 (例: "5km", "10mi")
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 位置情報に基づく動画のリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                location=location,
+                locationRadius=location_radius,
+                type="video",
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_videos_by_duration_all(self, duration="medium", max_results=None, query=""):
+        """動画の長さで検索（ページネーション対応）
+
+        Args:
+            duration (str): 動画の長さ ("short"=4分未満, "medium"=4-20分, "long"=20分以上)
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            query (str): 検索キーワード（オプション）
+
+        Returns:
+            list: 長さ別動画のリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet",
+                "videoDuration": duration,
+                "type": "video",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if query:
+                params["q"] = query
+
+            return self.youtube.search().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_hd_videos_all(self, query="", max_results=None):
+        """HD動画を全て検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: HD動画のリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet",
+                "videoDefinition": "high",
+                "type": "video",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if query:
+                params["q"] = query
+
+            return self.youtube.search().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_creative_commons_videos_all(self, query="", max_results=None):
+        """クリエイティブ・コモンズ動画を全て検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: クリエイティブ・コモンズ動画のリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet",
+                "videoLicense": "creativeCommon",
+                "type": "video",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if query:
+                params["q"] = query
+
+            return self.youtube.search().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_videos_with_captions_all(self, query="", max_results=None):
+        """字幕付き動画を全て検索（ページネーション対応）
+
+        Args:
+            query (str): 検索キーワード（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 字幕付き動画のリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet",
+                "videoCaption": "closedCaption",
+                "type": "video",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if query:
+                params["q"] = query
+
+            return self.youtube.search().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_videos_by_date_range_all(
+        self, published_after, published_before=None, query="", max_results=None
+    ):
+        """日付範囲で動画を全て検索（ページネーション対応）
+
+        Args:
+            published_after (str): 開始日時 (RFC 3339形式: "2020-01-01T00:00:00Z")
+            published_before (str): 終了日時 (RFC 3339形式、オプション)
+            query (str): 検索キーワード（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 日付範囲内の動画のリスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet",
+                "publishedAfter": published_after,
+                "type": "video",
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if published_before:
+                params["publishedBefore"] = published_before
+            if query:
+                params["q"] = query
+
+            return self.youtube.search().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_all_videos_with_pagination(self, request_builder, max_results=None):
+        """ページネーション対応の汎用動画取得メソッド
+
+        Args:
+            request_builder (function): リクエストを構築する関数
+            max_results (int): 取得する最大件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全ての動画情報のリスト
+        """
+        try:
+            all_items = []
+            next_page_token = None
+
+            while True:
+                # リクエストを構築して実行
+                request = request_builder(next_page_token)
+                response = request.execute()
+
+                all_items.extend(response.get("items", []))
+
+                # 最大件数に達したら終了
+                if max_results and len(all_items) >= max_results:
+                    return all_items[:max_results]
+
+                # 次のページがない場合は終了
+                next_page_token = response.get("nextPageToken")
+                if not next_page_token:
+                    break
+
+            return all_items
+
+        except HttpError as e:
+            raise YouTubeAPIError(f"API エラー: {e}")
+        except Exception as e:
+            raise YouTubeAPIError(f"予期しないエラー: {e}")
+
+    def search_videos_all(self, query, max_results=None, order="relevance"):
+        """動画検索（全件取得対応）
+
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: 検索結果の全リスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                q=query,
+                type="video",
+                maxResults=50,  # API制限の最大値
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_channel_videos_all(self, channel_id, max_results=None, order="date"):
+        """チャンネルの全動画を取得
+
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
+
+        Returns:
+            list: チャンネルの全動画リスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.search().list(
+                part="snippet",
+                channelId=channel_id,
+                type="video",
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_playlist_videos_all(self, playlist_id, max_results=None):
+        """プレイリストの全動画を取得
+
+        Args:
+            playlist_id (str): プレイリストID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: プレイリストの全動画リスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_popular_videos_all(
+        self, region_code="JP", category_id=None, max_results=None
+    ):
+        """人気動画を全て取得
+
+        Args:
+            region_code (str): 地域コード
+            category_id (str): カテゴリID（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 人気動画の全リスト
+        """
+
+        def build_request(page_token):
+            params = {
+                "part": "snippet,statistics",
+                "chart": "mostPopular",
+                "regionCode": region_code,
+                "maxResults": 50,
+                "pageToken": page_token,
+            }
+            if category_id:
+                params["videoCategoryId"] = category_id
+
+            return self.youtube.videos().list(**params)
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_comments_all(self, video_id, max_results=None):
+        """動画の全コメントを取得
+
+        Args:
+            video_id (str): 動画ID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全コメントのリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.commentThreads().list(
+                part="snippet",
+                videoId=video_id,
+                maxResults=100,  # コメントは100件まで
+                order="time",
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def get_channel_playlists_all(self, channel_id, max_results=None):
+        """チャンネルの全プレイリストを取得
+
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+
+        Returns:
+            list: 全プレイリストのリスト
+        """
+
+        def build_request(page_token):
+            return self.youtube.playlists().list(
+                part="snippet,contentDetails",
+                channelId=channel_id,
+                maxResults=50,
+                pageToken=page_token,
+            )
+
+        return self.get_all_videos_with_pagination(build_request, max_results)
+
+    def paginate_search(self, search_func, *args, max_results=None, **kwargs):
+        """汎用ページネーション検索ヘルパー
+
+        使用例:
+            # 検索結果を500件まで取得
+            results = yt.paginate_search(yt.search_videos, "Python", max_results=500)
+
+            # チャンネル動画を1000件まで取得
+            videos = yt.paginate_search(yt.get_channel_videos, "CHANNEL_ID", max_results=1000)
+
+        Args:
+            search_func (function): 検索関数
+            *args: 検索関数の引数
+            max_results (int): 最大取得件数
+            **kwargs: 検索関数のキーワード引数
+
+        Returns:
+            list: 検索結果の全リスト
+        """
+        all_results = []
+        page_size = 50
+        current_page = 0
+
+        while True:
+            # 現在のページの開始位置と終了位置を計算
+            start_index = current_page * page_size
+
+            if max_results:
+                remaining = max_results - len(all_results)
+                if remaining <= 0:
+                    break
+                current_max = min(page_size, remaining)
+            else:
+                current_max = page_size
+
+            # 検索実行
+            try:
+                results = search_func(*args, max_results=current_max, **kwargs)
+
+                if not results:
+                    break
+
+                all_results.extend(results)
+
+                # 取得件数が期待値より少ない場合は終了（最後のページ）
+                if len(results) < current_max:
+                    break
+
+                current_page += 1
+
+            except YouTubeAPIError as e:
+                if "quota" in str(e).lower():
+                    logger.warning(
+                        f"クォータ制限に達しました。{len(all_results)}件まで取得済み"
+                    )
+                    break
+                else:
+                    raise
+
+        return all_results[:max_results] if max_results else all_results
+
     def check_quota_usage(self):
         """APIクォータの使用量を確認するヘルパーメソッド
 
@@ -279,7 +1046,7 @@ class YouTubeAPI:
                 raise YouTubeAPIError(
                     f"チャンネルが見つかりません: {channel_id}",
                     error_code="channelNotFound",
-                    status_code=404
+                    status_code=404,
                 )
 
             return response["items"][0]
@@ -287,15 +1054,16 @@ class YouTubeAPI:
             error_details = {}
             try:
                 import json
+
                 error_details = json.loads(e.content.decode())
             except:
                 pass
-            
+
             raise YouTubeAPIError(
                 f"API エラー: {e}",
-                error_code=error_details.get('error', {}).get('code'),
+                error_code=error_details.get("error", {}).get("code"),
                 status_code=e.resp.status,
-                details=error_details
+                details=error_details,
             )
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {e}")
