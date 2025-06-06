@@ -1240,267 +1240,303 @@ class YouTubeAPI:
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def get_channel_videos(self, channel_id, max_results=50):
-        """チャンネルの最新動画を取得
-
-        指定されたチャンネルIDから、最新の動画一覧を取得します。
-        新しい動画から順番に取得されます。
+    def get_channel_videos_all(self, channel_id, max_results=None, order="date"):
+        """チャンネルの全動画を取得
 
         Args:
-            channel_id (str): YouTubeチャンネルのID
-            max_results (int): 取得する最大動画数 (デフォルト: 50)
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
+            order (str): ソート順序
 
         Returns:
-            list: 動画情報の辞書のリスト
-                各要素はチャンネル内の動画情報を含む（新しい順）
-
-        Raises:
-            YouTubeAPIError: チャンネルが見つからない、またはAPI呼び出しに失敗した場合
+            list: チャンネルの全動画リスト
         """
-        try:
-            # チャンネルの動画を検索（日付順）
-            request = self.youtube.search().list(
+
+        def build_request(page_token):
+            return self.youtube.search().list(
                 part="snippet",
                 channelId=channel_id,
-                type="video",  # 動画のみを検索
-                maxResults=max_results,
-                order="date",  # 新しい順で取得
+                type="video",
+                maxResults=50,
+                order=order,
+                pageToken=page_token,
             )
-            response = request.execute()
 
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
+        return self.get_all_videos_with_pagination(build_request, max_results)
 
-    def get_video_categories(self, region_code="JP"):
-        """動画カテゴリ一覧を取得
-
-        指定された地域の動画カテゴリ一覧を取得します。
+    def get_playlist_videos_all(self, playlist_id, max_results=None):
+        """プレイリストの全動画を取得
 
         Args:
-            region_code (str): 地域コード (デフォルト: 'JP')
+            playlist_id (str): プレイリストID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
 
         Returns:
-            list: カテゴリ情報のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
+            list: プレイリストの全動画リスト
         """
-        try:
-            request = self.youtube.videoCategories().list(
-                part="snippet", regionCode=region_code
+
+        def build_request(page_token):
+            return self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=50,
+                pageToken=page_token,
             )
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def get_popular_videos(self, region_code="JP", category_id=None, max_results=50):
-        """人気動画を取得
+        return self.get_all_videos_with_pagination(build_request, max_results)
 
-        指定された地域の人気動画を取得します。
+    def get_popular_videos_all(
+        self, region_code="JP", category_id=None, max_results=None
+    ):
+        """人気動画を全て取得
 
         Args:
-            region_code (str): 地域コード (デフォルト: 'JP')
-            category_id (str): カテゴリID (オプション)
-            max_results (int): 取得する最大動画数 (デフォルト: 50)
+            region_code (str): 地域コード
+            category_id (str): カテゴリID（オプション）
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
 
         Returns:
-            list: 人気動画のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
+            list: 人気動画の全リスト
         """
-        try:
+
+        def build_request(page_token):
             params = {
                 "part": "snippet,statistics",
                 "chart": "mostPopular",
                 "regionCode": region_code,
-                "maxResults": max_results,
+                "maxResults": 50,
+                "pageToken": page_token,
             }
-
             if category_id:
                 params["videoCategoryId"] = category_id
 
-            request = self.youtube.videos().list(**params)
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
+            return self.youtube.videos().list(**params)
 
-    def search_channels(self, query, max_results=5, order="relevance"):
-        """チャンネルを検索
+        return self.get_all_videos_with_pagination(build_request, max_results)
 
-        キーワードでチャンネルを検索します。
+    def get_comments_all(self, video_id, max_results=None):
+        """動画の全コメントを取得
 
         Args:
-            query (str): 検索キーワード
-            max_results (int): 取得する最大結果数 (デフォルト: 5)
-            order (str): ソート順序 (デフォルト: 'relevance')
+            video_id (str): 動画ID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
 
         Returns:
-            list: 検索結果のチャンネルリスト
-
-        Raises:
-            YouTubeAPIError: 検索に失敗した場合
+            list: 全コメントのリスト
         """
-        try:
-            request = self.youtube.search().list(
+
+        def build_request(page_token):
+            return self.youtube.commentThreads().list(
                 part="snippet",
-                q=query,
-                type="channel",
-                maxResults=max_results,
-                order=order,
+                videoId=video_id,
+                maxResults=100,  # コメントは100件まで
+                order="time",
+                pageToken=page_token,
             )
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def search_playlists(self, query, max_results=5, order="relevance"):
-        """プレイリストを検索
+        return self.get_all_videos_with_pagination(build_request, max_results)
 
-        キーワードでプレイリストを検索します。
+    def get_channel_playlists_all(self, channel_id, max_results=None):
+        """チャンネルの全プレイリストを取得
 
         Args:
-            query (str): 検索キーワード
-            max_results (int): 取得する最大結果数 (デフォルト: 5)
-            order (str): ソート順序 (デフォルト: 'relevance')
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は全て取得）
 
         Returns:
-            list: 検索結果のプレイリストリスト
-
-        Raises:
-            YouTubeAPIError: 検索に失敗した場合
+            list: 全プレイリストのリスト
         """
-        try:
-            request = self.youtube.search().list(
-                part="snippet",
-                q=query,
-                type="playlist",
-                maxResults=max_results,
-                order=order,
+
+        def build_request(page_token):
+            return self.youtube.playlists().list(
+                part="snippet,contentDetails",
+                channelId=channel_id,
+                maxResults=50,
+                pageToken=page_token,
             )
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def get_playlist_info(self, playlist_id):
-        """プレイリスト情報を取得
+        return self.get_all_videos_with_pagination(build_request, max_results)
 
-        指定されたプレイリストIDの詳細情報を取得します。
-
+    def get_channel_videos_paginated(self, channel_id, max_results=None, order="date", page_token=None):
+        """チャンネル動画を取得（ページネーション対応）
+        
         Args:
-            playlist_id (str): YouTubeプレイリストのID
-
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数（Noneの場合は50件）
+            order (str): ソート順序（'date', 'relevance', 'rating', 'title', 'viewCount'）
+            page_token (str): ページトークン（次のページ用）
+        
         Returns:
-            dict: プレイリスト情報
-
-        Raises:
-            YouTubeAPIError: プレイリストが見つからない、またはAPI呼び出しに失敗した場合
-        """
-        try:
-            request = self.youtube.playlists().list(
-                part="snippet,status,contentDetails", id=playlist_id
-            )
-            response = request.execute()
-
-            if not response["items"]:
-                raise YouTubeAPIError(f"プレイリストが見つかりません: {playlist_id}")
-
-            return response["items"][0]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
-
-    def get_channel_playlists(self, channel_id, max_results=50):
-        """チャンネルのプレイリスト一覧を取得
-
-        指定されたチャンネルが作成したプレイリストを取得します。
-
-        Args:
-            channel_id (str): YouTubeチャンネルのID
-            max_results (int): 取得する最大プレイリスト数 (デフォルト: 50)
-
-        Returns:
-            list: プレイリスト情報のリスト
-
+            dict: 検索結果とページ情報
+                'items': 動画リスト
+                'nextPageToken': 次のページトークン（存在する場合）
+                'totalResults': 総件数（推定）
+        
         Raises:
             YouTubeAPIError: API呼び出しに失敗した場合
         """
         try:
-            playlists = []
-            next_page_token = None
-
-            while len(playlists) < max_results:
-                request = self.youtube.playlists().list(
-                    part="snippet,contentDetails",
-                    channelId=channel_id,
-                    maxResults=min(50, max_results - len(playlists)),
-                    pageToken=next_page_token,
-                )
-                response = request.execute()
-
-                playlists.extend(response["items"])
-
-                next_page_token = response.get("nextPageToken")
-                if not next_page_token:
-                    break
-
-            return playlists[:max_results]
+            # デフォルトの取得件数を設定
+            if max_results is None:
+                max_results = 50
+            
+            # API制限に合わせて調整（最大50件まで）
+            max_results = min(max_results, 50)
+            
+            # APIリクエストパラメータ
+            params = {
+                'part': 'snippet',
+                'channelId': channel_id,
+                'type': 'video',
+                'maxResults': max_results,
+                'order': order
+            }
+            
+            # ページトークンがある場合は追加
+            if page_token:
+                params['pageToken'] = page_token
+            
+            # APIリクエスト実行
+            request = self.youtube.search().list(**params)
+            response = request.execute()
+            
+            return {
+                'items': response.get('items', []),
+                'nextPageToken': response.get('nextPageToken'),
+                'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
+                'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
+            }
+            
         except HttpError as e:
             raise YouTubeAPIError(f"API エラー: {e}")
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def get_video_comments_with_replies(self, video_id, max_results=100):
-        """動画のコメントを返信付きで取得
-
-        指定された動画のコメントとその返信を全て取得します。
-
+    def search_videos_paginated(self, query, max_results=None, order="relevance", page_token=None, **filters):
+        """動画検索（ページネーション対応）
+        
         Args:
-            video_id (str): YouTube動画のID
-            max_results (int): 取得する最大コメント数 (デフォルト: 100)
-
+            query (str): 検索キーワード
+            max_results (int): 最大取得件数（Noneの場合は50件）
+            order (str): ソート順序
+            page_token (str): ページトークン
+            **filters: 追加フィルター
+        
         Returns:
-            list: コメントと返信を含む情報のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
+            dict: 検索結果とページ情報
         """
         try:
-            comments = []
-            next_page_token = None
+            if max_results is None:
+                max_results = 50
+            
+            max_results = min(max_results, 50)
+            
+            params = {
+                'part': 'snippet',
+                'q': query,
+                'type': 'video',
+                'maxResults': max_results,
+                'order': order,
+                **filters
+            }
+            
+            if page_token:
+                params['pageToken'] = page_token
+            
+            request = self.youtube.search().list(**params)
+            response = request.execute()
+            
+            return {
+                'items': response.get('items', []),
+                'nextPageToken': response.get('nextPageToken'),
+                'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
+                'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
+            }
+            
+        except HttpError as e:
+            raise YouTubeAPIError(f"API エラー: {e}")
+        except Exception as e:
+            raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-            while len(comments) < max_results:
-                request = self.youtube.commentThreads().list(
-                    part="snippet,replies",
-                    videoId=video_id,
-                    maxResults=min(100, max_results - len(comments)),
-                    pageToken=next_page_token,
-                    order="time",
-                )
-                response = request.execute()
+    def get_playlist_videos_paginated(self, playlist_id, max_results=None, page_token=None):
+        """プレイリスト動画を取得（ページネーション対応）
+        
+        Args:
+            playlist_id (str): プレイリストID
+            max_results (int): 最大取得件数
+            page_token (str): ページトークン
+        
+        Returns:
+            dict: 検索結果とページ情報
+        """
+        try:
+            if max_results is None:
+                max_results = 50
+            
+            max_results = min(max_results, 50)
+            
+            params = {
+                'part': 'snippet',
+                'playlistId': playlist_id,
+                'maxResults': max_results
+            }
+            
+            if page_token:
+                params['pageToken'] = page_token
+            
+            request = self.youtube.playlistItems().list(**params)
+            response = request.execute()
+            
+            return {
+                'items': response.get('items', []),
+                'nextPageToken': response.get('nextPageToken'),
+                'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
+                'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
+            }
+            
+        except HttpError as e:
+            raise YouTubeAPIError(f"API エラー: {e}")
+        except Exception as e:
+            raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-                comments.extend(response["items"])
-
-                next_page_token = response.get("nextPageToken")
-                if not next_page_token:
-                    break
-
-            return comments[:max_results]
+    def get_comments_paginated(self, video_id, max_results=None, order="time", page_token=None):
+        """コメントを取得（ページネーション対応）
+        
+        Args:
+            video_id (str): 動画ID
+            max_results (int): 最大取得件数
+            order (str): ソート順序（'time', 'relevance'）
+            page_token (str): ページトークン
+        
+        Returns:
+            dict: 検索結果とページ情報
+        """
+        try:
+            if max_results is None:
+                max_results = 100
+            
+            max_results = min(max_results, 100)  # コメントは100件まで
+            
+            params = {
+                'part': 'snippet',
+                'videoId': video_id,
+                'maxResults': max_results,
+                'order': order
+            }
+            
+            if page_token:
+                params['pageToken'] = page_token
+            
+            request = self.youtube.commentThreads().list(**params)
+            response = request.execute()
+            
+            return {
+                'items': response.get('items', []),
+                'nextPageToken': response.get('nextPageToken'),
+                'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
+                'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
+            }
+            
         except HttpError as e:
             if e.resp.status == 403:
                 raise YouTubeAPIError("この動画のコメントは無効化されています")
@@ -1508,89 +1544,62 @@ class YouTubeAPI:
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {e}")
 
-    def get_live_streams(self, part="snippet,status", mine=False, max_results=25):
-        """ライブストリーム情報を取得
-
-        ライブストリーム情報を取得します。
-
+    def paginate_all_results(self, paginated_func, *args, max_total_results=None, **kwargs):
+        """ページネーション対応関数で全件取得するヘルパー
+        
         Args:
-            part (str): 取得する情報の種類 (デフォルト: 'snippet,status')
-            mine (bool): 自分のストリームのみ取得するか (デフォルト: False)
-            max_results (int): 取得する最大結果数 (デフォルト: 25)
-
+            paginated_func: ページネーション対応関数
+            *args: 関数の引数
+            max_total_results (int): 最大総取得件数
+            **kwargs: 関数のキーワード引数
+        
         Returns:
-            list: ライブストリーム情報のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
+            list: 全ての結果
+        
+        例:
+            # チャンネルの全動画を取得
+            all_videos = yt.paginate_all_results(yt.get_channel_videos_paginated, "CHANNEL_ID", max_total_results=500)
+            
+            # 検索結果を全件取得
+            all_results = yt.paginate_all_results(yt.search_videos_paginated, "Python", max_total_results=1000)
         """
         try:
-            params = {"part": part, "maxResults": max_results}
-
-            if mine:
-                params["mine"] = True
-
-            request = self.youtube.liveStreams().list(**params)
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
+            all_items = []
+            next_page_token = None
+            
+            while True:
+                # 残り取得可能件数を計算
+                if max_total_results:
+                    remaining = max_total_results - len(all_items)
+                    if remaining <= 0:
+                        break
+                    
+                    # 今回のリクエストで取得する件数（最大50件）
+                    current_max = min(50, remaining)
+                    kwargs['max_results'] = current_max
+                
+                # ページネーション関数を実行
+                kwargs['page_token'] = next_page_token
+                result = paginated_func(*args, **kwargs)
+                
+                # 結果を追加
+                items = result.get('items', [])
+                if not items:
+                    break
+                
+                all_items.extend(items)
+                
+                # 次のページトークンを取得
+                next_page_token = result.get('nextPageToken')
+                if not next_page_token:
+                    break
+            
+            return all_items
+            
+        except YouTubeAPIError:
+            raise
         except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
-
-    def get_live_broadcasts(self, broadcast_status="all", max_results=25):
-        """ライブ配信情報を取得
-
-        ライブ配信の情報を取得します。
-
-        Args:
-            broadcast_status (str): 配信状態 ('all', 'active', 'completed', 'upcoming')
-            max_results (int): 取得する最大結果数 (デフォルト: 25)
-
-        Returns:
-            list: ライブ配信情報のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
-        """
-        try:
-            request = self.youtube.liveBroadcasts().list(
-                part="snippet,status",
-                mine=True,
-                broadcastStatus=broadcast_status,
-                maxResults=max_results,
-            )
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
-
-    def get_channel_sections(self, channel_id):
-        """チャンネルセクション情報を取得
-
-        指定されたチャンネルのセクション情報を取得します。
-
-        Args:
-            channel_id (str): YouTubeチャンネルのID
-
-        Returns:
-            list: チャンネルセクション情報のリスト
-
-        Raises:
-            YouTubeAPIError: API呼び出しに失敗した場合
-        """
-        try:
-            request = self.youtube.channelSections().list(
-                part="snippet,contentDetails", channelId=channel_id
-            )
-            response = request.execute()
-            return response["items"]
-        except HttpError as e:
-            raise YouTubeAPIError(f"API エラー: {e}")
-        except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
+            raise YouTubeAPIError(f"ページネーション処理エラー: {e}")
 
     def get_channel_activities(self, channel_id, max_results=50):
         """チャンネルのアクティビティを取得
