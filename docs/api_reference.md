@@ -1080,233 +1080,323 @@ def get_guide_categories(region_code: str = "JP") -> list
 
 ## ページネーション機能
 
-### search_videos_paginated()
+### 簡略化メソッド（通常のリスト取得版）
+
+これらのメソッドは、ページネーション機能を内部で使用し、指定した件数まで自動的に全件取得します。手動でページングを行う必要がありません。
+
+### get_channel_playlists()
 
 ```python
-def search_videos_paginated(query: str, max_results: int = 50, order: str = "relevance", page_token: str = None, **filters) -> dict
+def get_channel_playlists(channel_id: str, max_results: int = 50) -> list
 ```
 
-ページネーション対応の動画検索機能。
-
-**パラメータ:**
-- `query` (str): 検索キーワード
-- `max_results` (int): 1ページあたりの最大結果数（1-50、デフォルト: 50）
-- `order` (str): ソート順序（デフォルト: 'relevance'）
-- `page_token` (str): 次ページ取得用のトークン（オプション）
-- `**filters`: 追加の検索フィルター
-
-**戻り値:**
-```python
-{
-    'items': [...],  # 検索結果のリスト
-    'nextPageToken': 'token_string',  # 次ページのトークン
-    'totalResults': 1000000,  # 総結果数（推定）
-    'resultsPerPage': 50      # 1ページあたりの結果数
-}
-```
-
-**使用例:**
-```python
-# 基本的な使用
-result = yt.search_videos_paginated("Python", max_results=50)
-videos = result['items']
-
-# 次のページを取得
-if result.get('nextPageToken'):
-    next_result = yt.search_videos_paginated(
-        "Python", 
-        max_results=50, 
-        page_token=result['nextPageToken']
-    )
-```
-
-### get_channel_videos_paginated()
-
-```python
-def get_channel_videos_paginated(channel_id: str, max_results: int = 50, order: str = "date", page_token: str = None) -> dict
-```
-
-ページネーション対応のチャンネル動画取得機能。
+チャンネルのプレイリスト一覧を取得します（簡略版）。
 
 **パラメータ:**
 - `channel_id` (str): チャンネルID
-- `max_results` (int): 1ページあたりの最大結果数（1-50、デフォルト: 50）
-- `order` (str): ソート順序（'date', 'relevance', 'rating', 'title', 'viewCount'）
-- `page_token` (str): 次ページ取得用のトークン（オプション）
+- `max_results` (int): 最大取得件数（デフォルト: 50）
+
+**戻り値:**
+- `list`: プレイリスト一覧
+
+**使用例:**
+```python
+playlists = yt.get_channel_playlists("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=100)
+for playlist in playlists:
+    print(f"📝 {playlist['snippet']['title']}")
+    print(f"   説明: {playlist['snippet']['description'][:100]}...")
+```
+
+### search_all_videos()
+
+```python
+def search_all_videos(query: str, max_results: int = 500) -> list
+```
+
+動画を全件検索します（簡略版）。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `max_results` (int): 最大取得件数（デフォルト: 500）
+
+**戻り値:**
+- `list`: 検索結果
+
+**使用例:**
+```python
+all_videos = yt.search_all_videos("Python プログラミング", max_results=1000)
+print(f"✅ 検索完了: {len(all_videos)} 件の動画を取得")
+
+# チャンネル別統計
+channels = {}
+for video in all_videos:
+    channel = video['snippet']['channelTitle']
+    channels[channel] = channels.get(channel, 0) + 1
+
+print("📊 チャンネル別動画数（上位10位）:")
+for channel, count in sorted(channels.items(), key=lambda x: x[1], reverse=True)[:10]:
+    print(f"  {channel}: {count}本")
+```
+
+### get_all_channel_videos()
+
+```python
+def get_all_channel_videos(channel_id: str, max_results: int = 500) -> list
+```
+
+チャンネルの全動画を取得します（簡略版）。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+- `max_results` (int): 最大取得件数（デフォルト: 500）
+
+**戻り値:**
+- `list`: 動画一覧
+
+**使用例:**
+```python
+all_videos = yt.get_all_channel_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=1000)
+print(f"📹 取得完了: {len(all_videos)} 件の動画")
+
+# 投稿頻度分析
+from datetime import datetime
+import collections
+
+years = []
+for video in all_videos:
+    published_at = video['snippet']['publishedAt']
+    year = datetime.fromisoformat(published_at.replace('Z', '+00:00')).year
+    years.append(year)
+
+year_counts = collections.Counter(years)
+print("📊 年別投稿数:")
+for year, count in sorted(year_counts.items()):
+    print(f"  {year}年: {count}本")
+```
+
+### get_all_playlist_videos()
+
+```python
+def get_all_playlist_videos(playlist_id: str, max_results: int = 500) -> list
+```
+
+プレイリストの全動画を取得します（簡略版）。
+
+**パラメータ:**
+- `playlist_id` (str): プレイリストID
+- `max_results` (int): 最大取得件数（デフォルト: 500）
+
+**戻り値:**
+- `list`: 動画一覧
+
+**使用例:**
+```python
+all_videos = yt.get_all_playlist_videos("PLxyz123", max_results=200)
+print(f"📝 プレイリスト全動画: {len(all_videos)} 件")
+
+# 動画時間の合計計算（duration情報が必要な場合）
+total_duration = 0
+for video in all_videos:
+    video_id = video['snippet']['resourceId']['videoId']
+    video_details = yt.get_video_info(video_id)
+    # duration処理ロジックをここに追加
+```
+
+### get_all_comments()
+
+```python
+def get_all_comments(video_id: str, max_results: int = 1000) -> list
+```
+
+動画の全コメントを取得します（簡略版）。
+
+**パラメータ:**
+- `video_id` (str): 動画ID
+- `max_results` (int): 最大取得件数（デフォルト: 1000）
+
+**戻り値:**
+- `list`: コメント一覧
+
+**例外:**
+- `YouTubeAPIError`: コメントが無効化されている場合
+
+**使用例:**
+```python
+try:
+    all_comments = yt.get_all_comments("dQw4w9WgXcQ", max_results=2000)
+    print(f"💬 全コメント取得: {len(all_comments)} 件")
+    
+    # コメント分析
+    import re
+    from collections import Counter
+    
+    # 感情分析やキーワード抽出
+    keywords = []
+    for comment in all_comments:
+        text = comment['snippet']['topLevelComment']['snippet']['textDisplay']
+        # 簡単なキーワード抽出例
+        words = re.findall(r'\w+', text.lower())
+        keywords.extend(words)
+    
+    # 頻出キーワード上位10位
+    word_counts = Counter(keywords)
+    print("🔥 頻出キーワード:")
+    for word, count in word_counts.most_common(10):
+        print(f"  {word}: {count}回")
+        
+except YouTubeAPIError as e:
+    if e.is_forbidden():
+        print("❌ この動画はコメントが無効化されています")
+    else:
+        print(f"エラー: {e}")
+```
+
+### search_playlists_paginated()
+
+```python
+def search_playlists_paginated(query: str, max_results: int = 50, order: str = "relevance", page_token: str = None, **filters) -> dict
+```
+
+プレイリスト検索（ページネーション対応）。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `max_results` (int): 最大取得件数（1-50、デフォルト: 50）
+- `order` (str): ソート順序（デフォルト: 'relevance'）
+- `page_token` (str): ページトークン（オプション）
+- `**filters`: 追加フィルター
 
 **戻り値:**
 ```python
 {
-    'items': [...],  # 動画リスト
+    'items': [...],  # プレイリスト検索結果
     'nextPageToken': 'token_string',  # 次ページのトークン
     'totalResults': 500,  # 総結果数（推定）
     'resultsPerPage': 50  # 1ページあたりの結果数
 }
 ```
 
-### get_playlist_videos_paginated()
-
-```python
-def get_playlist_videos_paginated(playlist_id: str, max_results: int = 50, page_token: str = None) -> dict
-```
-
-ページネーション対応のプレイリスト動画取得機能。
-
-**パラメータ:**
-- `playlist_id` (str): プレイリストID
-- `max_results` (int): 1ページあたりの最大結果数（1-50、デフォルト: 50）
-- `page_token` (str): 次ページ取得用のトークン（オプション）
-
-**戻り値:**
-```python
-{
-    'items': [...],  # プレイリスト動画のリスト
-    'nextPageToken': 'token_string',  # 次ページのトークン
-    'totalResults': 200,  # 総結果数
-    'resultsPerPage': 50  # 1ページあたりの結果数
-}
-```
-
-### get_comments_paginated()
-
-```python
-def get_comments_paginated(video_id: str, max_results: int = 100, order: str = "time", page_token: str = None) -> dict
-```
-
-ページネーション対応のコメント取得機能。
-
-**パラメータ:**
-- `video_id` (str): 動画ID
-- `max_results` (int): 1ページあたりの最大結果数（1-100、デフォルト: 100）
-- `order` (str): ソート順序（'time', 'relevance'）
-- `page_token` (str): 次ページ取得用のトークン（オプション）
-
-**戻り値:**
-```python
-{
-    'items': [...],  # コメントのリスト
-    'nextPageToken': 'token_string',  # 次ページのトークン
-    'totalResults': 1500,  # 総コメント数
-    'resultsPerPage': 100  # 1ページあたりの結果数
-}
-```
-
-### paginate_all_results()
-
-```python
-def paginate_all_results(paginated_func, *args, max_total_results: int = None, **kwargs) -> list
-```
-
-ページネーション対応関数で全件取得するヘルパーメソッド。
-
-**パラメータ:**
-- `paginated_func`: ページネーション対応関数
-- `*args`: 関数の引数
-- `max_total_results` (int): 最大総取得件数（オプション）
-- `**kwargs`: 関数のキーワード引数
-
-**戻り値:**
-- `list`: 全ての結果
-
 **使用例:**
 ```python
-# チャンネルの全動画を取得（最大500件）
-all_videos = yt.paginate_all_results(
-    yt.get_channel_videos_paginated, 
-    "CHANNEL_ID", 
-    max_total_results=500
-)
+# 基本的なプレイリスト検索
+result = yt.search_playlists_paginated("Python 学習", max_results=25)
+playlists = result['items']
 
-# 検索結果を全件取得（最大1000件）
-all_search_results = yt.paginate_all_results(
-    yt.search_videos_paginated, 
-    "Python プログラミング", 
-    max_total_results=1000
-)
+print(f"🔍 検索結果: {len(playlists)} 件")
+for playlist in playlists:
+    snippet = playlist['snippet']
+    print(f"📝 {snippet['title']}")
+    print(f"   チャンネル: {snippet['channelTitle']}")
+    print(f"   公開日: {snippet['publishedAt'][:10]}")
 
-print(f"✅ 取得完了: {len(all_videos)} 件")
+# 次のページを取得
+if result.get('nextPageToken'):
+    next_result = yt.search_playlists_paginated(
+        "Python 学習", 
+        max_results=25, 
+        page_token=result['nextPageToken']
+    )
 ```
 
----
+### 簡略化メソッドの活用パターン
 
-## エラーハンドリング
-
-### YouTubeAPIError の詳細
-
-YouTube.py3では、APIエラーを詳細に分類し、適切な対処法を提供します。
+#### パターン1: 大量データの一括取得
 
 ```python
-try:
-    videos = yt.search_videos("Python")
-except YouTubeAPIError as e:
-    # エラーの種類に応じた処理
-    if e.is_quota_exceeded():
-        print("⏰ クォータ制限に達しました。しばらく待ってから再試行してください。")
-    elif e.is_api_key_invalid():
-        print("🔑 APIキーが無効です。設定を確認してください。")
-    elif e.is_not_found():
-        print("🔍 リソースが見つかりません。IDを確認してください。")
-    elif e.is_forbidden():
-        print("🚫 アクセス権限がありません。認証設定を確認してください。")
-    else:
-        print(f"❌ その他のエラー: {e}")
-```
-
----
-
-## 使用パターン集
-
-### パターン1: 基本的な情報取得
-
-```python
-# チャンネル情報と最新動画を取得
+# チャンネルの全動画とコメントを一括分析
 channel_id = "UC_x5XG1OV2P6uZZ5FSM9Ttw"
 
+# 1. チャンネル情報を取得
 channel = yt.get_channel_info(channel_id)
-videos = yt.get_channel_videos_paginated(channel_id, max_results=10)
+print(f"📺 分析対象: {channel['snippet']['title']}")
 
-print(f"📺 {channel['snippet']['title']}")
-print(f"👥 登録者数: {channel['statistics']['subscriberCount']}")
-print("🆕 最新動画:")
-for video in videos['items']:
-    print(f"  • {video['snippet']['title']}")
+# 2. 全動画を取得
+all_videos = yt.get_all_channel_videos(channel_id, max_results=1000)
+print(f"📹 対象動画数: {len(all_videos)}")
+
+# 3. 人気動画のコメントを分析
+popular_videos = all_videos[:10]  # 最新10本を分析
+for video in popular_videos:
+    video_id = video['id']['videoId']
+    try:
+        comments = yt.get_all_comments(video_id, max_results=500)
+        print(f"💬 {video['snippet']['title']}: {len(comments)}件のコメント")
+    except YouTubeAPIError:
+        print(f"❌ {video['snippet']['title']}: コメント取得不可")
 ```
 
-### パターン2: 大量データの効率的な取得
+#### パターン2: 検索結果の詳細分析
 
 ```python
-# チャンネルの全動画を効率的に取得
-all_videos = yt.paginate_all_results(
-    yt.get_channel_videos_paginated, 
-    "CHANNEL_ID", 
-    max_total_results=1000
+# 特定トピックの動画とプレイリストを包括分析
+query = "機械学習 入門"
+
+# 動画とプレイリストを並行取得
+videos = yt.search_all_videos(query, max_results=500)
+playlists = yt.paginate_all_results(
+    yt.search_playlists_paginated, 
+    query, 
+    max_total_results=100
 )
 
-print(f"✅ {len(all_videos)} 件の動画を取得しました")
+print(f"🎬 動画: {len(videos)}件")
+print(f"📝 プレイリスト: {len(playlists)}件")
+
+# チャンネル別集計
+all_content = videos + playlists
+channel_stats = {}
+for item in all_content:
+    channel = item['snippet']['channelTitle']
+    if channel not in channel_stats:
+        channel_stats[channel] = {'videos': 0, 'playlists': 0}
+    
+    if 'videoId' in item['id']:
+        channel_stats[channel]['videos'] += 1
+    else:
+        channel_stats[channel]['playlists'] += 1
+
+# 結果表示
+print("\n📊 チャンネル別コンテンツ数:")
+for channel, stats in sorted(channel_stats.items(), 
+                           key=lambda x: x[1]['videos'] + x[1]['playlists'], 
+                           reverse=True)[:10]:
+    total = stats['videos'] + stats['playlists']
+    print(f"  {channel}: 動画{stats['videos']}本 + プレイリスト{stats['playlists']}個 = 計{total}個")
 ```
 
-### パターン3: 検索結果の詳細分析
+#### パターン3: 効率的なデータ収集
 
 ```python
-# 検索結果を取得して詳細分析
-search_results = yt.paginate_all_results(
-    yt.search_videos_paginated,
-    "機械学習",
-    max_total_results=500
-)
+# 複数チャンネルの情報を効率的に収集
+channels = [
+    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    "UCqnbDFdCpuN8CMEg0VuEBqA",
+    # ... 他のチャンネルID
+]
 
-# 統計分析
-channels = {}
-for video in search_results:
-    channel = video['snippet']['channelTitle']
-    channels[channel] = channels.get(channel, 0) + 1
+all_data = {}
+for channel_id in channels:
+    try:
+        # チャンネル基本情報
+        channel_info = yt.get_channel_info(channel_id)
+        channel_name = channel_info['snippet']['title']
+        
+        # 最新動画を効率的に取得
+        recent_videos = yt.get_all_channel_videos(channel_id, max_results=50)
+        
+        # プレイリスト情報
+        playlists = yt.get_channel_playlists(channel_id, max_results=20)
+        
+        all_data[channel_name] = {
+            'info': channel_info,
+            'recent_videos': recent_videos,
+            'playlists': playlists
+        }
+        
+        print(f"✅ {channel_name}: 動画{len(recent_videos)}本, プレイリスト{len(playlists)}個")
+        
+    except YouTubeAPIError as e:
+        print(f"❌ {channel_id}: {e}")
 
-print("📊 チャンネル別動画数:")
-for channel, count in sorted(channels.items(), key=lambda x: x[1], reverse=True)[:10]:
-    print(f"  {channel}: {count}本")
+print(f"\n📊 収集完了: {len(all_data)}チャンネル")
 ```
-
----
-
-**最終更新**: 2024年12月  
-**関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)
