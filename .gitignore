@@ -1,12 +1,16 @@
 # 環境変数ファイル
 .env
 setup.py
-
+release.py
+release.bat
+release.lnk
 # APIキー関連
 *api_key*
 *secret*
 *credentials*
-
+update.bat
+update.lnk
+2964877.ico
 # Python関連
 __pycache__/
 *.py[cod]
