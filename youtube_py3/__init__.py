@@ -1,14 +1,16 @@
 """
-YouTube.py3 - YouTube Data API v3 Wrapper Library
-
-YouTube Data API v3を簡単に使用するためのPythonラッパーライブラリです。
+YouTube.py3 - Binary version
 """
 
-__version__ = "1.1.3"
+__version__ = "1.3.7"
 __author__ = "Chihalu"
-__email__ = "yanase.ui.prv@gmail.com"
-__license__ = "MIT"
 
-from .youtube_py3 import YouTubeAPI, YouTubeAPIError
+# バイナリモジュールから主要クラスをインポート
+try:
+    from .youtube_py3 import *
+except ImportError:
+    # フォールバック: 通常のPythonモジュール
+    from .youtube_py3 import YouTube
+    __all__ = ['YouTube']
 
-__all__ = ["YouTubeAPI", "YouTubeAPIError"]
+__all__ = ['YouTube', '__version__', '__author__']

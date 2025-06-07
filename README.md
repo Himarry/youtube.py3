@@ -2,7 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/youtube-py3.svg)](https://badge.fury.io/py/youtube-py3)
 [![Python versions](https://img.shields.io/pypi/pyversions/youtube-py3.svg)](https://pypi.org/project/youtube-py3/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: LOL](https://img.shields.io/badge/License-LOL-blue.svg)](LICENSE)
 
 [🇺🇸 English](README_en.md) | 🇯🇵 日本語
 
@@ -58,5 +58,19 @@ for video in videos:
 3. YouTube Data API v3を有効化
 4. 認証情報からAPIキーを作成
 
-#
+## 📄 ライセンス
+
+### 許可されること  
+- ✅ 商用利用可能  
+- ✅ ライブラリとしての使用（importして使うこと）
+
+### 禁止されること  
+- ❌ 改造・修正  
+- ❌ 再配布・配布（ライブラリ単体の販売や配布）  
+
+
+詳細は [LICENSE](LICENSE) ファイルをご覧ください。
+
+---
+
 **注意**: このライブラリはYouTube Data API v3の非公式ラッパーです。Google/YouTubeとは関係ありません。

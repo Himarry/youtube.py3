@@ -4,6 +4,8 @@ setup.py
 release.py
 release.bat
 release.lnk
+youtube_py3.py
+youtube_py3.pyx
 # APIキー関連
 *api_key*
 *secret*
@@ -60,3 +62,14 @@ htmlcov/
 # 一時ファイル
 *.tmp
 *.bak
+
+
+version_check.py
+publish.py
+github_binary.py
+build_binary.py
+バイナリ化.bat
+pyproject.toml
+__init__.pyx
+__init__.py.backup
+__init__.py
