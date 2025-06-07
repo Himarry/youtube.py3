@@ -20,6 +20,13 @@ YouTube.py3の全メソッドの詳細な説明です。実装済みのメソッ
 - [システム情報](#システム情報)
 - [ページネーション機能](#ページネーション機能)
 - [簡略化メソッド](#簡略化メソッド)
+- [便利なヘルパーメソッド](#便利なヘルパーメソッド)
+- [動画分析・比較機能](#動画分析比較機能)
+- [データエクスポート機能](#データエクスポート機能)
+- [高度な検索・フィルタリング](#高度な検索フィルタリング)
+- [バッチ処理・一括操作](#バッチ処理一括操作)
+- [通知・監視機能](#通知監視機能)
+- [ユーティリティ機能](#ユーティリティ機能)
 - [エラーハンドリング](#エラーハンドリング)
 - [使用パターン集](#使用パターン集)
 
@@ -993,56 +1000,388 @@ def report_video_abuse(video_id: str, reason_id: str, comments: str = "") -> boo
 
 ---
 
-## 透かし管理
+## 字幕管理
 
-### set_watermark()
+### get_video_captions()
 
 ```python
-def set_watermark(channel_id: str, image_file, timing_type: str = "offsetFromStart", offset_ms: int = 15000) -> dict
+def get_video_captions(video_id: str) -> list
 ```
 
-チャンネルに透かしを設定します。
+動画の字幕一覧を取得します。
 
 **パラメータ:**
-- `channel_id` (str): チャンネルID
-- `image_file`: 透かし画像ファイル
-- `timing_type` (str): タイミングタイプ（'offsetFromStart', 'offsetFromEnd'）
-- `offset_ms` (int): オフセット（ミリ秒、デフォルト: 15000）
+- `video_id` (str): YouTube動画のID
 
 **戻り値:**
-- `dict`: 設定結果
+- `list`: 字幕情報のリスト
+
+**例外:**
+- `YouTubeAPIError`: API呼び出しに失敗した場合
 
 **使用例:**
 ```python
-with open("watermark.png", "rb") as f:
-    result = yt.set_watermark(
-        "UC_x5XG1OV2P6uZZ5FSM9Ttw", 
-        f, 
-        timing_type="offsetFromStart", 
-        offset_ms=10000
-    )
-    print("✅ 透かし設定完了")
+captions = yt.get_video_captions("dQw4w9WgXcQ")
+for caption in captions:
+    print(f"言語: {caption['snippet']['language']}")
+    print(f"名前: {caption['snippet']['name']}")
 ```
 
-### unset_watermark()
+### download_caption()
 
 ```python
-def unset_watermark(channel_id: str) -> bool
+def download_caption(caption_id: str, format: str = "srt") -> str
 ```
 
-チャンネルの透かしを削除します。
+字幕をダウンロードします。
 
 **パラメータ:**
-- `channel_id` (str): チャンネルID
+- `caption_id` (str): 字幕ID
+- `format` (str): ダウンロード形式（'srt', 'vtt', 'ttml'）
+
+**戻り値:**
+- `str`: 字幕テキスト
+
+**使用例:**
+```python
+caption_text = yt.download_caption("caption_id", format="srt")
+print(caption_text)
+```
+
+### upload_caption()
+
+```python
+def upload_caption(video_id: str, language: str, name: str, caption_file) -> dict
+```
+
+字幕をアップロードします。
+
+**パラメータ:**
+- `video_id` (str): YouTube動画のID
+- `language` (str): 言語コード（例: 'ja', 'en'）
+- `name` (str): 字幕名
+- `caption_file`: 字幕ファイル
+
+**戻り値:**
+- `dict`: アップロード結果
+
+### update_caption()
+
+```python
+def update_caption(caption_id: str, name: str = None, caption_file = None) -> dict
+```
+
+字幕を更新します。
+
+**パラメータ:**
+- `caption_id` (str): 字幕ID
+- `name` (str): 新しい字幕名（オプション）
+- `caption_file`: 新しい字幕ファイル（オプション）
+
+**戻り値:**
+- `dict`: 更新結果
+
+### delete_caption()
+
+```python
+def delete_caption(caption_id: str) -> bool
+```
+
+字幕を削除します。
+
+**パラメータ:**
+- `caption_id` (str): 字幕ID
 
 **戻り値:**
 - `bool`: 削除成功フラグ
 
+---
+
+## サブスクリプション管理
+
+### subscribe_to_channel()
+
+```python
+def subscribe_to_channel(channel_id: str) -> dict
+```
+
+チャンネルをサブスクライブします。
+
+**パラメータ:**
+- `channel_id` (str): サブスクライブするチャンネルID
+
+**戻り値:**
+- `dict`: サブスクライブ結果
+
 **使用例:**
 ```python
-success = yt.unset_watermark("UC_x5XG1OV2P6uZZ5FSM9Ttw")
-if success:
-    print("✅ 透かし削除完了")
+result = yt.subscribe_to_channel("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+print("✅ チャンネルをサブスクライブしました")
+```
+
+### unsubscribe_from_channel()
+
+```python
+def unsubscribe_from_channel(subscription_id: str) -> bool
+```
+
+チャンネルのサブスクライブを解除します。
+
+**パラメータ:**
+- `subscription_id` (str): サブスクリプションID
+
+**戻り値:**
+- `bool`: 解除成功フラグ
+
+---
+
+## メンバーシップ管理
+
+### get_channel_members()
+
+```python
+def get_channel_members(max_results: int = 50) -> list
+```
+
+チャンネルメンバーを取得します。
+
+**パラメータ:**
+- `max_results` (int): 取得する最大メンバー数
+
+**戻り値:**
+- `list`: メンバー情報のリスト
+
+**使用例:**
+```python
+members = yt.get_channel_members(max_results=100)
+for member in members:
+    print(f"メンバー: {member['snippet']['memberDetails']['displayName']}")
+```
+
+### get_membership_levels()
+
+```python
+def get_membership_levels() -> list
+```
+
+メンバーシップレベルを取得します。
+
+**戻り値:**
+- `list`: メンバーシップレベルのリスト
+
+**使用例:**
+```python
+levels = yt.get_membership_levels()
+for level in levels:
+    print(f"レベル: {level['snippet']['creatorChannelId']}")
+```
+
+---
+
+## システム情報
+
+### get_video_categories()
+
+```python
+def get_video_categories(region_code: str = "JP") -> list
+```
+
+動画カテゴリ一覧を取得します。
+
+**パラメータ:**
+- `region_code` (str): 地域コード
+
+**戻り値:**
+- `list`: カテゴリ情報のリスト
+
+**使用例:**
+```python
+categories = yt.get_video_categories("JP")
+for category in categories:
+    print(f"{category['id']}: {category['snippet']['title']}")
+```
+
+### get_supported_languages()
+
+```python
+def get_supported_languages() -> list
+```
+
+サポートされている言語一覧を取得します。
+
+**戻り値:**
+- `list`: 言語情報のリスト
+
+### get_supported_regions()
+
+```python
+def get_supported_regions() -> list
+```
+
+サポートされている地域一覧を取得します。
+
+**戻り値:**
+- `list`: 地域情報のリスト
+
+### get_guide_categories()
+
+```python
+def get_guide_categories(region_code: str = "JP") -> list
+```
+
+ガイドカテゴリを取得します。
+
+**パラメータ:**
+- `region_code` (str): 地域コード
+
+**戻り値:**
+- `list`: ガイドカテゴリのリスト
+
+---
+
+## ページネーション機能
+
+これらのメソッドは、大量のデータを効率的に処理するためのページネーション機能を提供します。
+
+### get_channel_videos_paginated()
+
+```python
+def get_channel_videos_paginated(channel_id: str, max_results: int = None, order: str = "date", page_token: str = None) -> dict
+```
+
+チャンネル動画を取得（ページネーション対応）。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+- `max_results` (int): 最大取得件数（Noneの場合は50件）
+- `order` (str): ソート順序（'date', 'relevance', 'rating', 'title', 'viewCount'）
+- `page_token` (str): ページトークン（次のページ用）
+
+**戻り値:**
+- `dict`: 検索結果とページ情報
+  - `'items'`: 動画リスト
+  - `'nextPageToken'`: 次のページトークン（存在する場合）
+  - `'totalResults'`: 総件数（推定）
+
+**使用例:**
+```python
+result = yt.get_channel_videos_paginated("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=25)
+print(f"取得件数: {len(result['items'])}")
+if result.get('nextPageToken'):
+    print("次のページが利用可能です")
+```
+
+### search_videos_paginated()
+
+```python
+def search_videos_paginated(query: str, max_results: int = None, order: str = "relevance", page_token: str = None, channel_id: str = None, **filters) -> dict
+```
+
+動画検索（ページネーション対応）。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `max_results` (int): 最大取得件数（Noneの場合は50件）
+- `order` (str): ソート順序
+- `page_token` (str): ページトークン
+- `channel_id` (str): 特定のチャンネル内で検索する場合のチャンネルID（オプション）
+- `**filters`: 追加フィルター
+
+**戻り値:**
+- `dict`: 検索結果とページ情報
+
+**使用例:**
+```python
+# 特定のチャンネル内でページネーション検索
+result = yt.search_videos_paginated(
+    "Python", 
+    max_results=25,
+    channel_id="UC_x5XG1OV2P6uZZ5FSM9Ttw"
+)
+```
+
+### get_playlist_videos_paginated()
+
+```python
+def get_playlist_videos_paginated(playlist_id: str, max_results: int = None, page_token: str = None) -> dict
+```
+
+プレイリスト動画を取得（ページネーション対応）。
+
+**パラメータ:**
+- `playlist_id` (str): プレイリストID
+- `max_results` (int): 最大取得件数
+- `page_token` (str): ページトークン
+
+**戻り値:**
+- `dict`: 検索結果とページ情報
+
+### get_comments_paginated()
+
+```python
+def get_comments_paginated(video_id: str, max_results: int = None, order: str = "time", page_token: str = None) -> dict
+```
+
+コメントを取得（ページネーション対応）。
+
+**パラメータ:**
+- `video_id` (str): 動画ID
+- `max_results` (int): 最大取得件数
+- `order` (str): ソート順序（'time', 'relevance'）
+- `page_token` (str): ページトークン
+
+**戻り値:**
+- `dict`: 検索結果とページ情報
+
+### search_playlists_paginated()
+
+```python
+def search_playlists_paginated(query: str, max_results: int = None, order: str = "relevance", page_token: str = None, **filters) -> dict
+```
+プレイリスト検索（ページネーション対応）。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `max_results` (int): 最大取得件数
+- `order` (str): ソート順序
+- `page_token` (str): ページトークン
+- `**filters`: 追加フィルター
+
+**戻り値:**
+- `dict`: 検索結果とページ情報
+
+### paginate_all_results()
+
+```python
+def paginate_all_results(paginated_func, *args, max_total_results: int = None, **kwargs) -> list
+```
+
+ページネーション対応関数で全件取得するヘルパー。
+
+**パラメータ:**
+- `paginated_func`: ページネーション対応関数
+- `*args`: 関数の引数
+- `max_total_results` (int): 最大総取得件数
+- `**kwargs`: 関数のキーワード引数
+
+**戻り値:**
+- `list`: 全ての結果
+
+**使用例:**
+```python
+# チャンネルの全動画を取得
+all_videos = yt.paginate_all_results(
+    yt.get_channel_videos_paginated, 
+    "CHANNEL_ID", 
+    max_total_results=500
+)
+
+# 検索結果を全件取得
+all_results = yt.paginate_all_results(
+    yt.search_videos_paginated, 
+    "Python", 
+    max_total_results=1000
+)
 ```
 
 ---
@@ -1180,32 +1519,566 @@ except YouTubeAPIError as e:
 
 ---
 
-## エラーハンドリング
+## 便利なヘルパーメソッド
 
-### YouTubeAPIError の詳細
-
-YouTube.py3では、APIエラーを詳細に分類し、適切な対処法を提供します。
+### get_basic_info()
 
 ```python
-try:
-    videos = yt.search_videos("Python")
-except YouTubeAPIError as e:
-    # エラーの種類に応じた処理
-    if e.is_quota_exceeded():
-        print("⏰ クォータ制限に達しました。しばらく待ってから再試行してください。")
-    elif e.is_api_key_invalid():
-        print("🔑 APIキーが無効です。設定を確認してください。")
-    elif e.is_not_found():
-        print("🔍 リソースが見つかりません。IDを確認してください。")
-    elif e.is_forbidden():
-        print("🚫 アクセス権限がありません。認証設定を確認してください。")
-    else:
-        print(f"❌ その他のエラー: {e}")
+def get_basic_info(resource_id: str, resource_type: str = "auto") -> dict
+```
+
+リソースの基本情報を自動判別して取得します。
+
+**パラメータ:**
+- `resource_id` (str): YouTube ID（動画、チャンネル、プレイリスト）
+- `resource_type` (str): リソースタイプ（'auto', 'video', 'channel', 'playlist'）
+
+**戻り値:**
+- `dict`: 基本情報
+
+**使用例:**
+```python
+# 自動判別
+info = yt.get_basic_info("dQw4w9WgXcQ")  # 動画として認識
+info = yt.get_basic_info("UC_x5XG1OV2P6uZZ5FSM9Ttw")  # チャンネルとして認識
+```
+
+### quick_search()
+
+```python
+def quick_search(query: str, count: int = 10, content_type: str = "video") -> list
+```
+
+クイック検索（結果を簡潔に返します）。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `count` (int): 取得件数
+- `content_type` (str): コンテンツタイプ（'video', 'channel', 'playlist', 'all'）
+
+**戻り値:**
+- `list`: 簡潔な検索結果
+
+**使用例:**
+```python
+results = yt.quick_search("Python プログラミング", count=5)
+for result in results:
+    print(f"{result['title']} - {result['id']}")
+```
+
+### get_stats_summary()
+
+```python
+def get_stats_summary(resource_id: str, resource_type: str = "auto") -> dict
+```
+
+統計情報のサマリーを取得します。
+
+**パラメータ:**
+- `resource_id` (str): リソースID
+- `resource_type` (str): リソースタイプ
+
+**戻り値:**
+- `dict`: 統計サマリー
+
+**使用例:**
+```python
+stats = yt.get_stats_summary("dQw4w9WgXcQ")
+print(f"再生回数: {stats['view_count']:,}")
+```
+
+### bulk_get_video_info()
+
+```python
+def bulk_get_video_info(video_ids: list) -> list
+```
+
+複数の動画情報を一括取得します。
+
+**パラメータ:**
+- `video_ids` (list): 動画IDのリスト（最大50件）
+
+**戻り値:**
+- `list`: 動画情報のリスト
+
+**使用例:**
+```python
+videos = yt.bulk_get_video_info(["dQw4w9WgXcQ", "jNQXAC9IVRw"])
+for video in videos:
+    print(f"タイトル: {video['snippet']['title']}")
+```
+
+### bulk_get_channel_info()
+
+```python
+def bulk_get_channel_info(channel_ids: list) -> list
+```
+
+複数のチャンネル情報を一括取得します。
+
+**パラメータ:**
+- `channel_ids` (list): チャンネルIDのリスト（最大50件）
+
+**戻り値:**
+- `list`: チャンネル情報のリスト
+
+### get_trending_videos()
+
+```python
+def get_trending_videos(region_code: str = "JP", category_id: str = None, max_results: int = 50) -> list
+```
+
+トレンド動画を取得します。
+
+**パラメータ:**
+- `region_code` (str): 地域コード
+- `category_id` (str): カテゴリID（オプション）
+- `max_results` (int): 最大取得件数
+
+**戻り値:**
+- `list`: トレンド動画のリスト
+
+**使用例:**
+```python
+trending = yt.get_trending_videos("JP", max_results=20)
+for video in trending:
+    print(f"📈 {video['snippet']['title']}")
+```
+
+### get_channel_from_username()
+
+```python
+def get_channel_from_username(username: str) -> dict
+```
+
+ユーザー名からチャンネル情報を取得します。
+
+**パラメータ:**
+- `username` (str): YouTubeユーザー名
+
+**戻り値:**
+- `dict`: チャンネル情報
+
+### get_my_channel()
+
+```python
+def get_my_channel() -> dict
+```
+
+自分のチャンネル情報を取得します（OAuth認証が必要）。
+
+**戻り値:**
+- `dict`: 自分のチャンネル情報
+
+### extract_video_id_from_url()
+
+```python
+def extract_video_id_from_url(youtube_url: str) -> str
+```
+
+YouTube URLから動画IDを抽出します。
+
+**パラメータ:**
+- `youtube_url` (str): YouTube URL
+
+**戻り値:**
+- `str`: 動画ID
+
+**使用例:**
+```python
+video_id = yt.extract_video_id_from_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+print(f"動画ID: {video_id}")
+```
+
+### extract_playlist_id_from_url()
+
+```python
+def extract_playlist_id_from_url(youtube_url: str) -> str
+```
+
+YouTube URLからプレイリストIDを抽出します。
+
+**パラメータ:**
+- `youtube_url` (str): YouTube URL
+
+**戻り値:**
+- `str`: プレイリストID
+
+### get_video_duration_seconds()
+
+```python
+def get_video_duration_seconds(video_id: str) -> int
+```
+
+動画の長さを秒で取得します。
+
+**パラメータ:**
+- `video_id` (str): 動画ID
+
+**戻り値:**
+- `int`: 動画の長さ（秒）
+
+**使用例:**
+```python
+duration = yt.get_video_duration_seconds("dQw4w9WgXcQ")
+print(f"動画の長さ: {duration//60}分{duration%60}秒")
+```
+
+### format_view_count()
+
+```python
+def format_view_count(view_count: int) -> str
+```
+
+再生回数を読みやすい形式にフォーマットします。
+
+**パラメータ:**
+- `view_count` (int): 再生回数
+
+**戻り値:**
+- `str`: フォーマット済み文字列
+
+**使用例:**
+```python
+formatted = yt.format_view_count(1234567)  # "123.5万回"
+print(f"再生回数: {formatted}")
+```
+
+### format_subscriber_count()
+
+```python
+def format_subscriber_count(subscriber_count: int) -> str
+```
+
+登録者数を読みやすい形式にフォーマットします。
+
+**パラメータ:**
+- `subscriber_count` (int): 登録者数
+
+**戻り値:**
+- `str`: フォーマット済み文字列
+
+**使用例:**
+```python
+formatted = yt.format_subscriber_count(123456)  # "12.3万人"
+print(f"登録者数: {formatted}")
+```
+
+### search_and_get_details()
+
+```python
+def search_and_get_details(query: str, max_results: int = 10, include_stats: bool = True) -> list
+```
+
+検索して詳細情報も一緒に取得します。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `max_results` (int): 最大結果数
+- `include_stats` (bool): 統計情報を含めるか
+
+**戻り値:**
+- `list`: 詳細情報付きの検索結果
+
+**使用例:**
+```python
+results = yt.search_and_get_details("Python", max_results=5)
+for video in results:
+    print(f"{video['snippet']['title']} - {video['view_count']}回再生")
+```
+
+### get_channel_upload_playlist()
+
+```python
+def get_channel_upload_playlist(channel_id: str) -> str
+```
+
+チャンネルのアップロードプレイリストIDを取得します。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+
+**戻り値:**
+- `str`: アップロードプレイリストID
+
+### get_latest_videos_from_channel()
+
+```python
+def get_latest_videos_from_channel(channel_id: str, max_results: int = 10) -> list
+```
+
+チャンネルの最新動画を効率的に取得します。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+- `max_results` (int): 最大取得件数
+
+**戻り値:**
+- `list`: 最新動画のリスト
+
+---
+
+## 動画分析・比較機能
+
+### compare_videos()
+
+```python
+def compare_videos(video_ids: list, metrics: list = None) -> dict
+```
+
+複数の動画を比較分析します。
+
+**パラメータ:**
+- `video_ids` (list): 動画IDのリスト（最大50件）
+- `metrics` (list): 比較する指標 ['views', 'likes', 'comments', 'duration']
+
+**戻り値:**
+- `dict`: 比較結果とランキング
+
+**使用例:**
+```python
+comparison = yt.compare_videos(["dQw4w9WgXcQ", "jNQXAC9IVRw"])
+print(f"最も再生された動画: {comparison['rankings']['views'][0]['title']}")
+```
+
+### analyze_channel_performance()
+
+```python
+def analyze_channel_performance(channel_id: str, days_back: int = 30, max_videos: int = 50) -> dict
+```
+
+チャンネルのパフォーマンス分析を行います。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+- `days_back` (int): 分析対象期間（日数）
+- `max_videos` (int): 分析する最大動画数
+
+**戻り値:**
+- `dict`: パフォーマンス分析結果
+
+**使用例:**
+```python
+analysis = yt.analyze_channel_performance("UC_x5XG1OV2P6uZZ5FSM9Ttw", days_back=30)
+print(f"エンゲージメント率: {analysis['engagement_rate']:.2f}%")
 ```
 
 ---
 
-## 使用パターン集
+## データエクスポート機能
+
+### export_search_results_to_csv()
+
+```python
+def export_search_results_to_csv(query: str, filename: str = None, max_results: int = 100) -> str
+```
+
+検索結果をCSVファイルにエクスポートします。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `filename` (str): 出力ファイル名（Noneの場合は自動生成）
+- `max_results` (int): 最大結果数
+
+**戻り値:**
+- `str`: 作成されたファイル名
+
+**使用例:**
+```python
+filename = yt.export_search_results_to_csv("Python プログラミング", max_results=50)
+print(f"CSVファイルを作成しました: {filename}")
+```
+
+### export_channel_videos_to_json()
+
+```python
+def export_channel_videos_to_json(channel_id: str, filename: str = None, max_videos: int = 100) -> str
+```
+
+チャンネルの動画情報をJSONファイルにエクスポートします。
+
+**パラメータ:**
+- `channel_id` (str): チャンネルID
+- `filename` (str): 出力ファイル名
+- `max_videos` (int): 最大動画数
+
+**戻り値:**
+- `str`: 作成されたファイル名
+
+---
+
+## 高度な検索・フィルタリング
+
+### search_videos_advanced()
+
+```python
+def search_videos_advanced(query: str, filters: dict = None, sort_by: str = 'relevance') -> list
+```
+
+高度な動画検索（複数フィルター対応）を行います。
+
+**パラメータ:**
+- `query` (str): 検索キーワード
+- `filters` (dict): フィルター条件
+- `sort_by` (str): ソート順序
+
+**戻り値:**
+- `list`: フィルター済み検索結果
+
+**使用例:**
+```python
+filters = {
+    'min_duration': 300,  # 5分以上
+    'max_duration': 3600,  # 60分以下
+    'min_views': 10000,   # 1万回以上再生
+    'published_after': '2023-01-01',
+    'channel_subscriber_min': 1000  # 登録者1000人以上のチャンネル
+}
+results = yt.search_videos_advanced("Python tutorial", filters=filters)
+```
+
+---
+
+## バッチ処理・一括操作
+
+### batch_analyze_channels()
+
+```python
+def batch_analyze_channels(channel_ids: list, metrics: list = ['subscribers', 'videos', 'views']) -> dict
+```
+
+複数チャンネルの一括分析を行います。
+
+**パラメータ:**
+- `channel_ids` (list): チャンネルIDのリスト
+- `metrics` (list): 分析する指標
+
+**戻り値:**
+- `dict`: 分析結果とランキング
+
+**使用例:**
+```python
+analysis = yt.batch_analyze_channels(["UC1", "UC2", "UC3"])
+print(f"総登録者数: {analysis['summary']['total_subscribers']:,}")
+```
+
+---
+
+## 通知・監視機能
+
+### monitor_channel_for_new_videos()
+
+```python
+def monitor_channel_for_new_videos(channel_id: str, last_video_id: str = None) -> dict
+```
+
+チャンネルの新しい動画をチェックします。
+
+**パラメータ:**
+- `channel_id` (str): 監視するチャンネルID
+- `last_video_id` (str): 前回チェック時の最新動画ID
+
+**戻り値:**
+- `dict`: 新しい動画の情報
+
+**使用例:**
+```python
+result = yt.monitor_channel_for_new_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+if result['count'] > 0:
+    print(f"新しい動画が{result['count']}本投稿されました")
+    for video in result['new_videos']:
+        print(f"  • {video['title']}")
+```
+
+---
+
+## ユーティリティ機能
+
+### generate_video_summary()
+
+```python
+def generate_video_summary(video_id: str) -> dict
+```
+
+動画の包括的なサマリーを生成します。
+
+**パラメータ:**
+- `video_id` (str): 動画ID
+
+**戻り値:**
+- `dict`: 動画の包括的な情報
+
+**使用例:**
+```python
+summary = yt.generate_video_summary("dQw4w9WgXcQ")
+print(f"パフォーマンススコア: {summary['analysis']['performance_score']}")
+print(f"エンゲージメントレベル: {summary['analysis']['engagement_level']}")
+```
+
+**戻り値の構造:**
+```python
+{
+    'basic_info': {
+        'title': '動画タイトル',
+        'channel': 'チャンネル名',
+        'published': '公開日',
+        'duration': '4:13',
+        'duration_seconds': 253,
+        'url': 'YouTube URL'
+    },
+    'performance': {
+        'views': 1234567,
+        'views_formatted': '123.5万回',
+        'likes': 12345,
+        'comments': 678,
+        'engagement_rate': 1.05
+    },
+    'content': {
+        'description_length': 500,
+        'description_preview': '説明文の最初の200文字...',
+        'tags': ['タグ1', 'タグ2'],
+        'category_id': '10'
+    },
+    'analysis': {
+        'performance_score': 85.2,
+        'content_type': '短編（5分未満）',
+        'engagement_level': '普通'
+    }
+}
+```
+
+### 内部ヘルパーメソッド
+
+```python
+def _calculate_performance_score(views: int, likes: int, comments: int, duration: int) -> float
+```
+
+動画のパフォーマンススコアを計算（0-100）。
+
+```python
+def _classify_video_length(duration: int) -> str
+```
+
+動画の長さで分類します。
+- `duration < 60`: "ショート（1分未満）"
+- `duration < 300`: "短編（5分未満）"
+- `duration < 1200`: "中編（20分未満）"
+- `duration >= 1200`: "長編（20分以上）"
+
+```python
+def _classify_engagement(engagement_rate: float) -> str
+```
+
+エンゲージメント率で分類します。
+- `>= 10%`: "非常に高い"
+- `>= 5%`: "高い"
+- `>= 2%`: "普通"
+- `>= 1%`: "低い"
+- `< 1%`: "非常に低い"
+
+---
+
+## 高度な使用パターン
 
 ### パターン1: 基本的な情報取得
 
@@ -1316,7 +2189,246 @@ if channel:
     print(f"✅ チャンネル取得成功: {channel['snippet']['title']}")
 ```
 
+### パターン7: 包括的なチャンネル分析
+
+```python
+# チャンネルの包括的な分析
+channel_id = "UC_x5XG1OV2P6uZZ5FSM9Ttw"
+
+# 基本情報取得
+channel_info = yt.get_channel_info(channel_id)
+channel_stats = yt.get_stats_summary(channel_id)
+
+# 最新動画の分析
+latest_videos = yt.get_latest_videos_from_channel(channel_id, max_results=20)
+video_ids = [v['snippet']['resourceId']['videoId'] for v in latest_videos]
+video_comparison = yt.compare_videos(video_ids)
+
+# パフォーマンス分析
+performance = yt.analyze_channel_performance(channel_id, days_back=30)
+
+print(f"📺 チャンネル名: {channel_info['snippet']['title']}")
+print(f"👥 登録者数: {yt.format_subscriber_count(channel_stats['subscriber_count'])}")
+print(f"📊 平均エンゲージメント率: {performance['engagement_rate']:.2f}%")
+print(f"🏆 トップパフォーマー: {performance['top_performer']['title']}")
+```
+
+### パターン8: 高度な検索とフィルタリング
+
+```python
+# 詳細なフィルター条件での検索
+advanced_filters = {
+    'min_duration': 600,    # 10分以上
+    'max_duration': 1800,   # 30分以下
+    'min_views': 50000,     # 5万回以上
+    'published_after': '2023-01-01',
+    'channel_subscriber_min': 10000
+}
+
+# 高度な検索実行
+results = yt.search_videos_advanced(
+    "機械学習 チュートリアル", 
+    filters=advanced_filters,
+    sort_by='views'
+)
+
+# 結果の分析
+for video in results[:5]:
+    summary = yt.generate_video_summary(video['id']['videoId'])
+    print(f"🎬 {video['snippet']['title']}")
+    print(f"   パフォーマンス: {summary['analysis']['performance_score']}/100")
+    print(f"   エンゲージメント: {summary['analysis']['engagement_level']}")
+```
+### パターン9: データエクスポートとレポート生成
+
+```python
+# 検索結果をCSVにエクスポート
+csv_file = yt.export_search_results_to_csv(
+    "Python プログラミング",
+    filename="python_videos_report.csv",
+    max_results=100
+)
+
+# チャンネル動画をJSONにエクスポート
+json_file = yt.export_channel_videos_to_json(
+    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    filename="channel_analysis.json",
+    max_videos=200
+)
+
+print(f"📄 CSVレポート: {csv_file}")
+print(f"📋 JSONデータ: {json_file}")
+```
+
+### パターン10: チャンネル監視システム
+
+```python
+import time
+import json
+
+def monitor_multiple_channels(channel_ids, check_interval=3600):
+    """複数チャンネルの監視システム"""
+    last_videos = {}
+    
+    # 初期状態を記録
+    for channel_id in channel_ids:
+        try:
+            latest = yt.get_latest_videos_from_channel(channel_id, max_results=1)
+            if latest:
+                last_videos[channel_id] = latest[0]['snippet']['resourceId']['videoId']
+        except YouTubeAPIError as e:
+            print(f"❌ チャンネル {channel_id} の初期化に失敗: {e}")
+    
+    while True:
+        print("🔍 チャンネル監視中...")
+        for channel_id in channel_ids:
+            try:
+                result = yt.monitor_channel_for_new_videos(
+                    channel_id, 
+                    last_videos.get(channel_id)
+                )
+                
+                if result['count'] > 0:
+                    channel_info = yt.get_channel_info(channel_id)
+                    print(f"🆕 {channel_info['snippet']['title']} に新動画！")
+                    
+                    for video in result['new_videos']:
+                        print(f"   📹 {video['title']}")
+                    
+                    # 最新動画IDを更新
+                    last_videos[channel_id] = result['latest_video_id']
+                    
+            except YouTubeAPIError as e:
+                print(f"❌ 監視エラー {channel_id}: {e}")
+        
+        time.sleep(check_interval)
+
+# 使用例
+channels_to_monitor = [
+    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    "UCxxxxxxxxxxxxxxxxxxxxxxx"
+]
+# monitor_multiple_channels(channels_to_monitor, check_interval=1800)  # 30分間隔
+```
+
 ---
 
 **最終更新**: 2024年12月  
 **関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)
+
+## 📋 完全機能リスト
+
+このAPIリファレンスには以下のすべての機能が含まれています：
+
+### ✅ 実装済み機能（全108メソッド）
+
+**基本クラス（2）**
+- YouTubeAPI
+- YouTubeAPIError
+
+**基本情報取得（6）**  
+- check_quota_usage(), get_channel_info(), get_video_info(), get_playlist_info()
+- get_channel_statistics_only(), get_video_statistics_only()
+
+**検索機能（3）**
+- search_videos(), search_channels(), search_playlists()
+
+**リスト取得（3）**
+- get_playlist_videos(), get_comments(), get_channel_videos()
+
+**ページネーション機能（6）**
+- get_channel_videos_paginated(), search_videos_paginated(), get_playlist_videos_paginated()
+- get_comments_paginated(), search_playlists_paginated(), paginate_all_results()
+
+**簡略化メソッド（5）**
+- get_channel_playlists(), search_all_videos(), get_all_channel_videos()
+- get_all_playlist_videos(), get_all_comments()
+
+**便利なヘルパーメソッド（15）**
+- get_basic_info(), quick_search(), get_stats_summary(), bulk_get_video_info()
+- bulk_get_channel_info(), get_trending_videos(), get_channel_from_username()
+- get_my_channel(), extract_video_id_from_url(), extract_playlist_id_from_url()
+- get_video_duration_seconds(), format_view_count(), format_subscriber_count()
+- search_and_get_details(), get_channel_upload_playlist(), get_latest_videos_from_channel()
+
+**プレイリスト管理（6）**
+- create_playlist(), update_playlist(), delete_playlist()
+- add_video_to_playlist(), remove_video_from_playlist(), update_playlist_item_position()
+
+**プレイリスト画像管理（2）**
+- get_playlist_images(), upload_playlist_image()
+
+**コメント管理（7）**
+- get_comment_details(), post_comment_reply(), post_comment_thread()
+- update_comment(), delete_comment(), mark_comment_as_spam(), set_comment_moderation_status()
+
+**チャンネル管理（6）**
+- update_channel(), upload_channel_banner(), create_channel_section()
+- update_channel_section(), delete_channel_section()
+
+**動画管理（8）**
+- upload_video(), update_video(), delete_video(), rate_video()
+- get_video_rating(), set_video_thumbnail(), report_video_abuse()
+
+**字幕管理（5）**
+- get_video_captions(), download_caption(), upload_caption()
+- update_caption(), delete_caption()
+
+**サブスクリプション管理（2）**
+- subscribe_to_channel(), unsubscribe_from_channel()
+
+**メンバーシップ管理（2）**
+- get_channel_members(), get_membership_levels()
+
+**透かし管理（2）**
+- set_watermark(), unset_watermark()
+
+**システム情報（4）**
+- get_video_categories(), get_supported_languages(), get_supported_regions(), get_guide_categories()
+
+**動画分析・比較機能（2）**
+- compare_videos(), analyze_channel_performance()
+
+**データエクスポート機能（2）**
+- export_search_results_to_csv(), export_channel_videos_to_json()
+
+**高度な検索・フィルタリング（1）**
+- search_videos_advanced()
+
+**バッチ処理・一括操作（1）**
+- batch_analyze_channels()
+
+**通知・監視機能（1）**
+- monitor_channel_for_new_videos()
+
+**ユーティリティ機能（4）**
+- generate_video_summary(), _calculate_performance_score()
+- _classify_video_length(), _classify_engagement()
+
+### 📖 使用パターン集（10パターン）
+
+1. 基本的な情報取得
+2. 大量データの効率的な取得
+3. 検索結果の詳細分析
+4. 特定チャンネル内での検索
+5. プレイリスト管理の自動化
+6. エラーハンドリングの実装
+7. 包括的なチャンネル分析
+8. 高度な検索とフィルタリング
+9. データエクスポートとレポート生成
+10. チャンネル監視システム
+
+### 🔧 エラーハンドリング
+
+- 詳細なエラー分類とメッセージ
+- エラー種別に応じた推奨アクション
+- 実用的なエラー処理パターン
+
+---
+
+このAPIリファレンスは、YouTube.py3ライブラリの全機能を網羅した完全なドキュメントです。各メソッドの詳細な説明、使用例、エラーハンドリング、実用的なパターン集まで含まれており、初心者から上級者まで幅広く活用できる内容となっています。
+
+**📚 次のステップ:**
+- [インストールガイド](installation.md)で環境設定
+- [使用例集](examples.md)で実践的な活用法を学習
+- [トラブルシューティング](troubleshooting.md)で問題解決方法を確認

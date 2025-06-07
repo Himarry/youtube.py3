@@ -1,0 +1,2990 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube API リファレンス - 完全版</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <h1 class="logo">YouTube API リファレンス - 完全版</h1>
+        <nav class="nav">
+          <input
+            type="text"
+            id="searchBox"
+            placeholder="APIを検索... (Ctrl+K)"
+            class="search-box"
+          />
+        </nav>
+      </div>
+    </header>
+
+    <main class="main">
+      <aside class="sidebar">
+        <nav class="api-nav">
+          <h3>カテゴリ</h3>
+          <ul class="nav-list">
+            <li>
+              <a href="#basic" class="nav-link" data-category="basic"
+                >基本クラス</a
+              >
+            </li>
+            <li>
+              <a href="#info" class="nav-link" data-category="info"
+                >基本情報取得</a
+              >
+            </li>
+            <li>
+              <a href="#search" class="nav-link" data-category="search"
+                >検索機能</a
+              >
+            </li>
+            <li>
+              <a href="#list" class="nav-link" data-category="list"
+                >リスト取得</a
+              >
+            </li>
+            <li>
+              <a href="#pagination" class="nav-link" data-category="pagination"
+                >ページネーション</a
+              >
+            </li>
+            <li>
+              <a href="#simple" class="nav-link" data-category="simple"
+                >簡略化メソッド</a
+              >
+            </li>
+            <li>
+              <a href="#helper" class="nav-link" data-category="helper"
+                >ヘルパーメソッド</a
+              >
+            </li>
+            <li>
+              <a href="#playlist" class="nav-link" data-category="playlist"
+                >プレイリスト管理</a
+              >
+            </li>
+            <li>
+              <a
+                href="#playlist-image"
+                class="nav-link"
+                data-category="playlist-image"
+                >プレイリスト画像</a
+              >
+            </li>
+            <li>
+              <a href="#comment" class="nav-link" data-category="comment"
+                >コメント管理</a
+              >
+            </li>
+            <li>
+              <a href="#channel" class="nav-link" data-category="channel"
+                >チャンネル管理</a
+              >
+            </li>
+            <li>
+              <a href="#video" class="nav-link" data-category="video"
+                >動画管理</a
+              >
+            </li>
+            <li>
+              <a href="#caption" class="nav-link" data-category="caption"
+                >字幕管理</a
+              >
+            </li>
+            <li>
+              <a
+                href="#subscription"
+                class="nav-link"
+                data-category="subscription"
+                >サブスクリプション</a
+              >
+            </li>
+            <li>
+              <a href="#membership" class="nav-link" data-category="membership"
+                >メンバーシップ</a
+              >
+            </li>
+            <li>
+              <a href="#watermark" class="nav-link" data-category="watermark"
+                >透かし管理</a
+              >
+            </li>
+            <li>
+              <a href="#system" class="nav-link" data-category="system"
+                >システム情報</a
+              >
+            </li>
+            <li>
+              <a href="#analysis" class="nav-link" data-category="analysis"
+                >動画分析・比較</a
+              >
+            </li>
+            <li>
+              <a href="#export" class="nav-link" data-category="export"
+                >データエクスポート</a
+              >
+            </li>
+            <li>
+              <a href="#advanced" class="nav-link" data-category="advanced"
+                >高度な検索</a
+              >
+            </li>
+            <li>
+              <a href="#batch" class="nav-link" data-category="batch"
+                >バッチ処理</a
+              >
+            </li>
+            <li>
+              <a href="#monitor" class="nav-link" data-category="monitor"
+                >通知・監視</a
+              >
+            </li>
+            <li>
+              <a href="#utility" class="nav-link" data-category="utility"
+                >ユーティリティ</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div id="intro" class="api-section">
+          <h2>YouTube API リファレンス - 完全版</h2>
+          <p>
+            このドキュメントは、YouTube.py3ライブラリの全108メソッドを含む包括的なリファレンスです。左のナビゲーションから各カテゴリを選択するか、上部の検索ボックスで特定のAPIを検索できます。
+          </p>
+          <div class="stats-summary">
+            <h3>📊 機能統計</h3>
+            <ul>
+              <li>基本クラス: 2メソッド</li>
+              <li>基本情報取得: 6メソッド</li>
+              <li>検索機能: 3メソッド</li>
+              <li>リスト取得: 3メソッド</li>
+              <li>ページネーション: 6メソッド</li>
+              <li>簡略化メソッド: 5メソッド</li>
+              <li>ヘルパーメソッド: 15メソッド</li>
+              <li>プレイリスト管理: 6メソッド</li>
+              <li>その他機能: 62メソッド</li>
+            </ul>
+            <p><strong>合計: 108の実装済みメソッド</strong></p>
+          </div>
+        </div>
+
+        <!-- 基本クラス -->
+        <div
+          id="basic"
+          class="api-section"
+          data-category="basic"
+          style="display: none"
+        >
+          <h2>基本クラス</h2>
+
+          <div class="api-method">
+            <h3>YouTubeAPI(api_key)</h3>
+            <div class="method-info">
+              <p class="description">YouTube Data API v3のメインクラス。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>api_key</code></td>
+                  <td>str</td>
+                  <td>YouTube Data API v3のAPIキー</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>from youtube_py3 import YouTubeAPI
+import os
+
+api_key = os.getenv('YOUTUBE_API_KEY')
+yt = YouTubeAPI(api_key)</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>YouTubeAPIError</h3>
+            <div class="method-info">
+              <p class="description">YouTube API関連のエラー例外クラス。</p>
+              <h4>メソッド</h4>
+              <ul>
+                <li>
+                  <code>is_quota_exceeded()</code>: クォータ超過エラー判定
+                </li>
+                <li>
+                  <code>is_api_key_invalid()</code>: APIキー無効エラー判定
+                </li>
+                <li><code>is_not_found()</code>: リソース未発見エラー判定</li>
+                <li><code>is_forbidden()</code>: アクセス権限エラー判定</li>
+                <li><code>get_suggested_action()</code>: 推奨アクション取得</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>try:
+    video = yt.get_video_info("invalid_id")
+except YouTubeAPIError as e:
+    if e.is_quota_exceeded():
+        print("APIクォータが制限を超えました")
+    elif e.is_not_found():
+        print("リソースが見つかりません")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 基本情報取得 -->
+        <div
+          id="info"
+          class="api-section"
+          data-category="info"
+          style="display: none"
+        >
+          <h2>基本情報取得</h2>
+
+          <div class="api-method">
+            <h3>check_quota_usage()</h3>
+            <div class="method-info">
+              <p class="description">APIクォータの使用量を確認します。</p>
+              <h4>戻り値</h4>
+              <p>bool: APIキーが有効かどうか</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>if yt.check_quota_usage():
+    print("✅ APIキーは有効です")
+else:
+    print("❌ APIキーに問題があります")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_channel_info(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">チャンネル情報を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>YouTubeチャンネルのID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>channel = yt.get_channel_info("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+print(f"チャンネル名: {channel['snippet']['title']}")
+print(f"登録者数: {channel['statistics']['subscriberCount']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_video_info(video_id)</h3>
+            <div class="method-info">
+              <p class="description">動画情報を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>YouTube動画のID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>video = yt.get_video_info("dQw4w9WgXcQ")
+print(f"タイトル: {video['snippet']['title']}")
+print(f"再生回数: {video['statistics']['viewCount']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_playlist_info(playlist_id)</h3>
+            <div class="method-info">
+              <p class="description">プレイリスト情報を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlist = yt.get_playlist_info("PLxyz123")
+print(f"プレイリスト名: {playlist['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_channel_statistics_only(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">
+                チャンネルの統計情報のみを効率的に取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>stats = yt.get_channel_statistics_only("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+print(f"登録者数: {stats['subscriberCount']}")
+print(f"総再生回数: {stats['viewCount']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_video_statistics_only(video_id)</h3>
+            <div class="method-info">
+              <p class="description">
+                動画の統計情報のみを効率的に取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>stats = yt.get_video_statistics_only("dQw4w9WgXcQ")
+print(f"再生回数: {stats['viewCount']}")
+print(f"いいね数: {stats.get('likeCount', 0)}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 検索機能 -->
+        <div
+          id="search"
+          class="api-section"
+          data-category="search"
+          style="display: none"
+        >
+          <h2>検索機能</h2>
+
+          <div class="api-method">
+            <h3>search_videos(query, max_results=5, order="relevance")</h3>
+            <div class="method-info">
+              <p class="description">動画を検索します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大結果数（デフォルト: 5）</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>
+                    ソート順序（'relevance', 'date', 'rating', 'viewCount',
+                    'title'）
+                  </td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>videos = yt.search_videos("Python プログラミング", max_results=10)
+for video in videos:
+    print(f"タイトル: {video['snippet']['title']}")
+    print(f"チャンネル: {video['snippet']['channelTitle']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>search_channels(query, max_results=5, order="relevance")</h3>
+            <div class="method-info">
+              <p class="description">チャンネルを検索します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大結果数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>channels = yt.search_channels("プログラミング", max_results=10)
+for channel in channels:
+    print(f"チャンネル: {channel['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>search_playlists(query, max_results=5, order="relevance")</h3>
+            <div class="method-info">
+              <p class="description">プレイリストを検索します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大結果数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlists = yt.search_playlists("Python 講座", max_results=10)
+for playlist in playlists:
+    print(f"プレイリスト: {playlist['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- リスト取得 -->
+        <div
+          id="list"
+          class="api-section"
+          data-category="list"
+          style="display: none"
+        >
+          <h2>リスト取得</h2>
+
+          <div class="api-method">
+            <h3>get_playlist_videos(playlist_id, max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストの動画一覧を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大動画数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>videos = yt.get_playlist_videos("PLxyz123", max_results=100)
+for video in videos:
+    print(f"動画: {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_comments(video_id, max_results=100)</h3>
+            <div class="method-info">
+              <p class="description">動画のコメントを取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大コメント数（デフォルト: 100）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>comments = yt.get_comments("dQw4w9WgXcQ", max_results=50)
+for comment in comments:
+    text = comment['snippet']['topLevelComment']['snippet']['textDisplay']
+    author = comment['snippet']['topLevelComment']['snippet']['authorDisplayName']
+    print(f"{author}: {text[:100]}...")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              get_channel_videos(channel_id, max_results=50, order="date")
+            </h3>
+            <div class="method-info">
+              <p class="description">チャンネルの動画を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大動画数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>videos = yt.get_channel_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=20)
+for video in videos:
+    print(f"動画: {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ページネーション機能 -->
+        <div
+          id="pagination"
+          class="api-section"
+          data-category="pagination"
+          style="display: none"
+        >
+          <h2>ページネーション機能</h2>
+
+          <div class="api-method">
+            <h3>
+              get_channel_videos_paginated(channel_id, max_results=None,
+              order="date", page_token=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                チャンネル動画を取得（ページネーション対応）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（Noneの場合は50件）</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+                <tr>
+                  <td><code>page_token</code></td>
+                  <td>str</td>
+                  <td>ページトークン（次のページ用）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.get_channel_videos_paginated("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=25)
+print(f"取得件数: {len(result['items'])}")
+if result.get('nextPageToken'):
+    print("次のページが利用可能です")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              search_videos_paginated(query, max_results=None,
+              order="relevance", page_token=None, channel_id=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">動画検索（ページネーション対応）。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+                <tr>
+                  <td><code>page_token</code></td>
+                  <td>str</td>
+                  <td>ページトークン</td>
+                </tr>
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>特定チャンネル内検索（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.search_videos_paginated("Python", max_results=25)
+for video in result['items']:
+    print(f"動画: {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              get_playlist_videos_paginated(playlist_id, max_results=None,
+              page_token=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                プレイリスト動画を取得（ページネーション対応）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>page_token</code></td>
+                  <td>str</td>
+                  <td>ページトークン</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.get_playlist_videos_paginated("PLxyz123")
+print(f"プレイリスト動画数: {len(result['items'])}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              get_comments_paginated(video_id, max_results=None, order="time",
+              page_token=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                コメントを取得（ページネーション対応）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序（'time', 'relevance'）</td>
+                </tr>
+                <tr>
+                  <td><code>page_token</code></td>
+                  <td>str</td>
+                  <td>ページトークン</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.get_comments_paginated("dQw4w9WgXcQ", max_results=50)
+print(f"コメント数: {len(result['items'])}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              search_playlists_paginated(query, max_results=None,
+              order="relevance", page_token=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                プレイリスト検索（ページネーション対応）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>order</code></td>
+                  <td>str</td>
+                  <td>ソート順序</td>
+                </tr>
+                <tr>
+                  <td><code>page_token</code></td>
+                  <td>str</td>
+                  <td>ページトークン</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.search_playlists_paginated("Python講座")
+for playlist in result['items']:
+    print(f"プレイリスト: {playlist['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              paginate_all_results(paginated_func, *args,
+              max_total_results=None, **kwargs)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                ページネーション対応関数で全件取得するヘルパー。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>paginated_func</code></td>
+                  <td>function</td>
+                  <td>ページネーション対応関数</td>
+                </tr>
+                <tr>
+                  <td><code>*args</code></td>
+                  <td>tuple</td>
+                  <td>関数の引数</td>
+                </tr>
+                <tr>
+                  <td><code>max_total_results</code></td>
+                  <td>int</td>
+                  <td>最大総取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>**kwargs</code></td>
+                  <td>dict</td>
+                  <td>関数のキーワード引数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># チャンネルの全動画を取得
+all_videos = yt.paginate_all_results(
+    yt.get_channel_videos_paginated, 
+    "CHANNEL_ID", 
+    max_total_results=500
+)</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 簡略化メソッド -->
+        <div
+          id="simple"
+          class="api-section"
+          data-category="simple"
+          style="display: none"
+        >
+          <h2>簡略化メソッド</h2>
+
+          <div class="api-method">
+            <h3>get_channel_playlists(channel_id, max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">
+                チャンネルのプレイリスト一覧を取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlists = yt.get_channel_playlists("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=100)
+print(f"取得したプレイリスト数: {len(playlists)}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>search_all_videos(query, max_results=500, channel_id=None)</h3>
+            <div class="method-info">
+              <p class="description">動画を全件検索します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 500）</td>
+                </tr>
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>特定チャンネル内検索（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># 一般検索
+videos = yt.search_all_videos("Python プログラミング", max_results=1000)
+
+# 特定チャンネル内検索
+channel_videos = yt.search_all_videos(
+    "機械学習", 
+    max_results=200,
+    channel_id="UC_x5XG1OV2P6uZZ5FSM9Ttw"
+)</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_all_channel_videos(channel_id, max_results=500)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルの全動画を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 500）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>all_videos = yt.get_all_channel_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=1000)
+print(f"取得した動画数: {len(all_videos)}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_all_playlist_videos(playlist_id, max_results=500)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストの全動画を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 500）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlist_videos = yt.get_all_playlist_videos("PLxyz123", max_results=300)
+print(f"プレイリスト内動画数: {len(playlist_videos)}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_all_comments(video_id, max_results=1000)</h3>
+            <div class="method-info">
+              <p class="description">動画の全コメントを取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 1000）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>all_comments = yt.get_all_comments("dQw4w9WgXcQ", max_results=2000)
+print(f"取得したコメント数: {len(all_comments)}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ヘルパーメソッド -->
+        <div
+          id="helper"
+          class="api-section"
+          data-category="helper"
+          style="display: none"
+        >
+          <h2>ヘルパーメソッド</h2>
+
+          <div class="api-method">
+            <h3>get_basic_info(resource_id, resource_type="auto")</h3>
+            <div class="method-info">
+              <p class="description">
+                リソースの基本情報を自動判別して取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>resource_id</code></td>
+                  <td>str</td>
+                  <td>YouTube ID（動画、チャンネル、プレイリスト）</td>
+                </tr>
+                <tr>
+                  <td><code>resource_type</code></td>
+                  <td>str</td>
+                  <td>
+                    リソースタイプ（'auto', 'video', 'channel', 'playlist'）
+                  </td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>info = yt.get_basic_info("dQw4w9WgXcQ")  # 動画として認識
+info = yt.get_basic_info("UC_x5XG1OV2P6uZZ5FSM9Ttw")  # チャンネルとして認識</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>quick_search(query, count=10, content_type="video")</h3>
+            <div class="method-info">
+              <p class="description">クイック検索（結果を簡潔に返します）。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>count</code></td>
+                  <td>int</td>
+                  <td>取得件数</td>
+                </tr>
+                <tr>
+                  <td><code>content_type</code></td>
+                  <td>str</td>
+                  <td>
+                    コンテンツタイプ（'video', 'channel', 'playlist', 'all'）
+                  </td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>results = yt.quick_search("Python プログラミング", count=5)
+for result in results:
+    print(f"{result['title']} - {result['id']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_stats_summary(resource_id, resource_type="auto")</h3>
+            <div class="method-info">
+              <p class="description">統計情報のサマリーを取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>resource_id</code></td>
+                  <td>str</td>
+                  <td>リソースID</td>
+                </tr>
+                <tr>
+                  <td><code>resource_type</code></td>
+                  <td>str</td>
+                  <td>リソースタイプ</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>stats = yt.get_stats_summary("dQw4w9WgXcQ")
+print(f"再生回数: {stats['view_count']:,}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>bulk_get_video_info(video_ids)</h3>
+            <div class="method-info">
+              <p class="description">複数の動画情報を一括取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_ids</code></td>
+                  <td>list</td>
+                  <td>動画IDのリスト（最大50件）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>videos = yt.bulk_get_video_info(["dQw4w9WgXcQ", "jNQXAC9IVRw"])
+for video in videos:
+    print(f"タイトル: {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>bulk_get_channel_info(channel_ids)</h3>
+            <div class="method-info">
+              <p class="description">複数のチャンネル情報を一括取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_ids</code></td>
+                  <td>list</td>
+                  <td>チャンネルIDのリスト（最大50件）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>channels = yt.bulk_get_channel_info(["UC1", "UC2", "UC3"])
+for channel in channels:
+    print(f"チャンネル: {channel['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              get_trending_videos(region_code="JP", category_id=None,
+              max_results=50)
+            </h3>
+            <div class="method-info">
+              <p class="description">トレンド動画を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>region_code</code></td>
+                  <td>str</td>
+                  <td>地域コード</td>
+                </tr>
+                <tr>
+                  <td><code>category_id</code></td>
+                  <td>str</td>
+                  <td>カテゴリID（オプション）</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>trending = yt.get_trending_videos("JP", max_results=20)
+for video in trending:
+    print(f"📈 {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_channel_from_username(username)</h3>
+            <div class="method-info">
+              <p class="description">
+                ユーザー名からチャンネル情報を取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>username</code></td>
+                  <td>str</td>
+                  <td>YouTubeユーザー名</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>channel = yt.get_channel_from_username("username")
+print(f"チャンネル名: {channel['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_my_channel()</h3>
+            <div class="method-info">
+              <p class="description">
+                自分のチャンネル情報を取得します（OAuth認証が必要）。
+              </p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>my_channel = yt.get_my_channel()
+print(f"自分のチャンネル: {my_channel['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>extract_video_id_from_url(youtube_url)</h3>
+            <div class="method-info">
+              <p class="description">YouTube URLから動画IDを抽出します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>youtube_url</code></td>
+                  <td>str</td>
+                  <td>YouTube URL</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>video_id = yt.extract_video_id_from_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+print(f"動画ID: {video_id}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>extract_playlist_id_from_url(youtube_url)</h3>
+            <div class="method-info">
+              <p class="description">
+                YouTube URLからプレイリストIDを抽出します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>youtube_url</code></td>
+                  <td>str</td>
+                  <td>YouTube URL</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlist_id = yt.extract_playlist_id_from_url("https://www.youtube.com/playlist?list=PLxyz123")
+print(f"プレイリストID: {playlist_id}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_video_duration_seconds(video_id)</h3>
+            <div class="method-info">
+              <p class="description">動画の長さを秒で取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>duration = yt.get_video_duration_seconds("dQw4w9WgXcQ")
+print(f"動画の長さ: {duration//60}分{duration%60}秒")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>format_view_count(view_count)</h3>
+            <div class="method-info">
+              <p class="description">
+                再生回数を読みやすい形式にフォーマットします。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>view_count</code></td>
+                  <td>int</td>
+                  <td>再生回数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>formatted = yt.format_view_count(1234567)  # "123.5万回"
+print(f"再生回数: {formatted}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>format_subscriber_count(subscriber_count)</h3>
+            <div class="method-info">
+              <p class="description">
+                登録者数を読みやすい形式にフォーマットします。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>subscriber_count</code></td>
+                  <td>int</td>
+                  <td>登録者数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>formatted = yt.format_subscriber_count(123456)  # "12.3万人"
+print(f"登録者数: {formatted}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              search_and_get_details(query, max_results=10, include_stats=True)
+            </h3>
+            <div class="method-info">
+              <p class="description">検索して詳細情報も一緒に取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大結果数</td>
+                </tr>
+                <tr>
+                  <td><code>include_stats</code></td>
+                  <td>bool</td>
+                  <td>統計情報を含めるか</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>results = yt.search_and_get_details("Python", max_results=5)
+for video in results:
+    print(f"{video['snippet']['title']} - {video['view_count']}回再生")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_channel_upload_playlist(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">
+                チャンネルのアップロードプレイリストIDを取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>upload_playlist_id = yt.get_channel_upload_playlist("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+print(f"アップロードプレイリストID: {upload_playlist_id}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_latest_videos_from_channel(channel_id, max_results=10)</h3>
+            <div class="method-info">
+              <p class="description">
+                チャンネルの最新動画を効率的に取得します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>latest_videos = yt.get_latest_videos_from_channel("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=5)
+for video in latest_videos:
+    print(f"最新動画: {video['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- プレイリスト管理 -->
+        <div
+          id="playlist"
+          class="api-section"
+          data-category="playlist"
+          style="display: none"
+        >
+          <h2>プレイリスト管理</h2>
+
+          <div class="api-method">
+            <h3>
+              create_playlist(title, description="", privacy_status="private")
+            </h3>
+            <div class="method-info">
+              <p class="description">プレイリストを作成します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str</td>
+                  <td>プレイリストタイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str</td>
+                  <td>プレイリスト説明</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str</td>
+                  <td>プライバシー設定（'private', 'public', 'unlisted'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlist = yt.create_playlist(
+    title="Python プログラミング講座",
+    description="Pythonの基本から応用まで学べる講座です",
+    privacy_status="public"
+)
+print(f"作成したプレイリストID: {playlist['id']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>add_video_to_playlist(playlist_id, video_id, position=None)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストに動画を追加します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>YouTube動画のID</td>
+                </tr>
+                <tr>
+                  <td><code>position</code></td>
+                  <td>int, optional</td>
+                  <td>追加する位置（省略時は末尾に追加）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.add_video_to_playlist("PLxyz123", "dQw4w9WgXcQ")
+print("動画をプレイリストに追加しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>remove_video_from_playlist(playlist_id, video_id)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストから動画を削除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>YouTube動画のID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.remove_video_from_playlist("PLxyz123", "dQw4w9WgXcQ")
+print("動画をプレイリストから削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              update_playlist(playlist_id, title=None, description=None,
+              privacy_status=None)
+            </h3>
+            <div class="method-info">
+              <p class="description">プレイリストの情報を更新します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str, optional</td>
+                  <td>新しいプレイリストタイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str, optional</td>
+                  <td>新しいプレイリスト説明</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str, optional</td>
+                  <td>
+                    新しいプライバシー設定（'private', 'public', 'unlisted'）
+                  </td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.update_playlist(
+    "PLxyz123",
+    title="新しいプレイリストタイトル",
+    description="新しい説明文",
+    privacy_status="private"
+)
+print("プレイリスト情報を更新しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_playlist_items(playlist_id, max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストのアイテムを取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>取得する最大アイテム数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>items = yt.get_playlist_items("PLxyz123", max_results=100)
+for item in items:
+    print(f"動画: {item['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- プレイリスト画像管理 -->
+        <div
+          id="playlist-image"
+          class="api-section"
+          data-category="playlist-image"
+          style="display: none"
+        >
+          <h2>プレイリスト画像管理</h2>
+
+          <div class="api-method">
+            <h3>set_playlist_thumbnail(playlist_id, image_path)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストのサムネイルを設定します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+                <tr>
+                  <td><code>image_path</code></td>
+                  <td>str</td>
+                  <td>画像ファイルのパス</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.set_playlist_thumbnail("PLxyz123", "thumbnail.jpg")
+print("プレイリストサムネイルを設定しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>delete_playlist_thumbnail(playlist_id)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストのサムネイルを削除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>playlist_id</code></td>
+                  <td>str</td>
+                  <td>プレイリストID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.delete_playlist_thumbnail("PLxyz123")
+print("プレイリストサムネイルを削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- コメント管理 -->
+        <div
+          id="comment"
+          class="api-section"
+          data-category="comment"
+          style="display: none"
+        >
+          <h2>コメント管理</h2>
+
+          <div class="api-method">
+            <h3>post_comment(video_id, text)</h3>
+            <div class="method-info">
+              <p class="description">動画にコメントを投稿します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>text</code></td>
+                  <td>str</td>
+                  <td>コメント内容</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.post_comment("dQw4w9WgXcQ", "素晴らしい動画です！")
+print("コメントを投稿しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>reply_to_comment(comment_id, text)</h3>
+            <div class="method-info">
+              <p class="description">コメントに返信します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>comment_id</code></td>
+                  <td>str</td>
+                  <td>返信対象のコメントID</td>
+                </tr>
+                <tr>
+                  <td><code>text</code></td>
+                  <td>str</td>
+                  <td>返信内容</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.reply_to_comment("comment123", "ありがとうございます！")
+print("返信しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>update_comment(comment_id, text)</h3>
+            <div class="method-info">
+              <p class="description">自分のコメントを編集します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>comment_id</code></td>
+                  <td>str</td>
+                  <td>編集対象のコメントID</td>
+                </tr>
+                <tr>
+                  <td><code>text</code></td>
+                  <td>str</td>
+                  <td>新しいコメント内容</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.update_comment("comment123", "編集したコメントです")
+print("コメントを編集しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>delete_comment(comment_id)</h3>
+            <div class="method-info">
+              <p class="description">自分のコメントを削除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>comment_id</code></td>
+                  <td>str</td>
+                  <td>削除対象のコメントID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.delete_comment("comment123")
+print("コメントを削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>like_comment(comment_id)</h3>
+            <div class="method-info">
+              <p class="description">コメントに「いいね」をします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>comment_id</code></td>
+                  <td>str</td>
+                  <td>いいねするコメントID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.like_comment("comment123")
+print("コメントにいいねしました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>moderate_comments(video_id, action)</h3>
+            <div class="method-info">
+              <p class="description">コメントをモデレートします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>action</code></td>
+                  <td>str</td>
+                  <td>アクション（'approve', 'reject', 'hold_for_review'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.moderate_comments("dQw4w9WgXcQ", "approve")
+print("コメントを承認しました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- チャンネル管理 -->
+        <div
+          id="channel"
+          class="api-section"
+          data-category="channel"
+          style="display: none"
+        >
+          <h2>チャンネル管理</h2>
+
+          <div class="api-method">
+            <h3>update_channel_info(title=None, description=None, keywords=None)</h3>
+            <div class="method-info">
+              <p class="description">チャンネル情報を更新します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str, optional</td>
+                  <td>新しいチャンネル名</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str, optional</td>
+                  <td>新しいチャンネル説明</td>
+                </tr>
+                <tr>
+                  <td><code>keywords</code></td>
+                  <td>list, optional</td>
+                  <td>チャンネルキーワード</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.update_channel_info(
+    title="新しいチャンネル名",
+    description="新しい説明文",
+    keywords=["プログラミング", "Python"]
+)
+print("チャンネル情報を更新しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>set_channel_thumbnail(image_path)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルのサムネイルを設定します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>image_path</code></td>
+                  <td>str</td>
+                  <td>画像ファイルのパス</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.set_channel_thumbnail("channel_avatar.jpg")
+print("チャンネルサムネイルを設定しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>set_channel_banner(image_path)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルのバナー画像を設定します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>image_path</code></td>
+                  <td>str</td>
+                  <td>バナー画像ファイルのパス</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.set_channel_banner("banner.jpg")
+print("チャンネルバナーを設定しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_channel_sections(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルのセクション情報を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>sections = yt.get_channel_sections("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+for section in sections:
+    print(f"セクション: {section['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 動画管理 -->
+        <div
+          id="video"
+          class="api-section"
+          data-category="video"
+          style="display: none"
+        >
+          <h2>動画管理</h2>
+
+          <div class="api-method">
+            <h3>upload_video(video_path, title, description="", tags=None, privacy_status="private")</h3>
+            <div class="method-info">
+              <p class="description">動画をアップロードします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_path</code></td>
+                  <td>str</td>
+                  <td>動画ファイルのパス</td>
+                </tr>
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str</td>
+                  <td>動画タイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str</td>
+                  <td>動画説明</td>
+                </tr>
+                <tr>
+                  <td><code>tags</code></td>
+                  <td>list</td>
+                  <td>タグリスト</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str</td>
+                  <td>プライバシー設定</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>video = yt.upload_video(
+    "video.mp4",
+    title="Python プログラミング入門",
+    description="初心者向けPython講座",
+    tags=["Python", "プログラミング"],
+    privacy_status="public"
+)
+print(f"動画をアップロードしました: {video['id']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>update_video(video_id, title=None, description=None, tags=None, privacy_status=None)</h3>
+            <div class="method-info">
+              <p class="description">動画情報を更新します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str, optional</td>
+                  <td>新しいタイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str, optional</td>
+                  <td>新しい説明</td>
+                </tr>
+                <tr>
+                  <td><code>tags</code></td>
+                  <td>list, optional</td>
+                  <td>新しいタグリスト</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str, optional</td>
+                  <td>新しいプライバシー設定</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.update_video(
+    "video123",
+    title="更新されたタイトル",
+    privacy_status="public"
+)
+print("動画情報を更新しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>delete_video(video_id)</h3>
+            <div class="method-info">
+              <p class="description">動画を削除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>削除する動画のID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.delete_video("video123")
+print("動画を削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>set_video_thumbnail(video_id, image_path)</h3>
+            <div class="method-info">
+              <p class="description">動画のサムネイルを設定します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>image_path</code></td>
+                  <td>str</td>
+                  <td>サムネイル画像のパス</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.set_video_thumbnail("video123", "thumbnail.jpg")
+print("動画サムネイルを設定しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>rate_video(video_id, rating)</h3>
+            <div class="method-info">
+              <p class="description">動画を評価します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>rating</code></td>
+                  <td>str</td>
+                  <td>評価（'like', 'dislike', 'none'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.rate_video("dQw4w9WgXcQ", "like")
+print("動画にいいねしました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 字幕管理 -->
+        <div
+          id="caption"
+          class="api-section"
+          data-category="caption"
+          style="display: none"
+        >
+          <h2>字幕管理</h2>
+
+          <div class="api-method">
+            <h3>get_captions(video_id)</h3>
+            <div class="method-info">
+              <p class="description">動画の字幕一覧を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>captions = yt.get_captions("dQw4w9WgXcQ")
+for caption in captions:
+    print(f"言語: {caption['snippet']['language']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>download_caption(caption_id, format="srt")</h3>
+            <div class="method-info">
+              <p class="description">字幕をダウンロードします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>caption_id</code></td>
+                  <td>str</td>
+                  <td>字幕ID</td>
+                </tr>
+                <tr>
+                  <td><code>format</code></td>
+                  <td>str</td>
+                  <td>ダウンロード形式（'srt', 'vtt', 'ttml'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>caption_text = yt.download_caption("caption123", format="srt")
+print("字幕をダウンロードしました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>upload_caption(video_id, caption_file, language="ja", name="日本語")</h3>
+            <div class="method-info">
+              <p class="description">動画に字幕をアップロードします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+                <tr>
+                  <td><code>caption_file</code></td>
+                  <td>str</td>
+                  <td>字幕ファイルのパス</td>
+                </tr>
+                <tr>
+                  <td><code>language</code></td>
+                  <td>str</td>
+                  <td>言語コード</td>
+                </tr>
+                <tr>
+                  <td><code>name</code></td>
+                  <td>str</td>
+                  <td>字幕の名前</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.upload_caption("video123", "captions.srt", "ja", "日本語")
+print("字幕をアップロードしました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>update_caption(caption_id, caption_file=None, name=None)</h3>
+            <div class="method-info">
+              <p class="description">字幕を更新します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>caption_id</code></td>
+                  <td>str</td>
+                  <td>字幕ID</td>
+                </tr>
+                <tr>
+                  <td><code>caption_file</code></td>
+                  <td>str, optional</td>
+                  <td>新しい字幕ファイルのパス</td>
+                </tr>
+                <tr>
+                  <td><code>name</code></td>
+                  <td>str, optional</td>
+                  <td>新しい字幕の名前</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.update_caption("caption123", "new_captions.srt")
+print("字幕を更新しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>delete_caption(caption_id)</h3>
+            <div class="method-info">
+              <p class="description">字幕を削除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>caption_id</code></td>
+                  <td>str</td>
+                  <td>削除する字幕のID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.delete_caption("caption123")
+print("字幕を削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- サブスクリプション管理 -->
+        <div
+          id="subscription"
+          class="api-section"
+          data-category="subscription"
+          style="display: none"
+        >
+          <h2>サブスクリプション管理</h2>
+
+          <div class="api-method">
+            <h3>get_my_subscriptions(max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">自分のチャンネル登録一覧を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>subscriptions = yt.get_my_subscriptions(100)
+for sub in subscriptions:
+    print(f"登録チャンネル: {sub['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>subscribe_to_channel(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルに登録します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>登録するチャンネルのID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.subscribe_to_channel("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+print("チャンネルに登録しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>unsubscribe_from_channel(subscription_id)</h3>
+            <div class="method-info">
+              <p class="description">チャンネル登録を解除します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>subscription_id</code></td>
+                  <td>str</td>
+                  <td>登録解除するサブスクリプションID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.unsubscribe_from_channel("subscription123")
+print("チャンネル登録を解除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- メンバーシップ管理 -->
+        <div
+          id="membership"
+          class="api-section"
+          data-category="membership"
+          style="display: none"
+        >
+          <h2>メンバーシップ管理</h2>
+
+          <div class="api-method">
+            <h3>get_members(max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルメンバー一覧を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>members = yt.get_members(100)
+for member in members:
+    print(f"メンバー: {member['snippet']['memberDetails']['displayName']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_membership_levels()</h3>
+            <div class="method-info">
+              <p class="description">メンバーシップレベル一覧を取得します。</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>levels = yt.get_membership_levels()
+for level in levels:
+    print(f"レベル: {level['snippet']['levelDetails']['displayName']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 透かし管理 -->
+        <div
+          id="watermark"
+          class="api-section"
+          data-category="watermark"
+          style="display: none"
+        >
+          <h2>透かし管理</h2>
+
+          <div class="api-method">
+            <h3>set_watermark(image_path, timing_type="offsetFromStart", timing_duration=15000)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルに透かしを設定します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>image_path</code></td>
+                  <td>str</td>
+                  <td>透かし画像のパス</td>
+                </tr>
+                <tr>
+                  <td><code>timing_type</code></td>
+                  <td>str</td>
+                  <td>表示タイミング</td>
+                </tr>
+                <tr>
+                  <td><code>timing_duration</code></td>
+                  <td>int</td>
+                  <td>表示時間（ミリ秒）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.set_watermark("watermark.png", "offsetFromStart", 15000)
+print("透かしを設定しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>unset_watermark()</h3>
+            <div class="method-info">
+              <p class="description">チャンネルの透かしを削除します。</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt.unset_watermark()
+print("透かしを削除しました")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- システム情報 -->
+        <div
+          id="system"
+          class="api-section"
+          data-category="system"
+          style="display: none"
+        >
+          <h2>システム情報</h2>
+
+          <div class="api-method">
+            <h3>get_video_categories(region_code="JP")</h3>
+            <div class="method-info">
+              <p class="description">動画カテゴリ一覧を取得します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>region_code</code></td>
+                  <td>str</td>
+                  <td>地域コード（デフォルト: "JP"）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>categories = yt.get_video_categories("JP")
+for category in categories:
+    print(f"カテゴリ: {category['snippet']['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_regions()</h3>
+            <div class="method-info">
+              <p class="description">サポートされている地域一覧を取得します。</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>regions = yt.get_regions()
+for region in regions:
+    print(f"地域: {region['snippet']['name']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_languages()</h3>
+            <div class="method-info">
+              <p class="description">サポートされている言語一覧を取得します。</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>languages = yt.get_languages()
+for language in languages:
+    print(f"言語: {language['snippet']['name']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 動画分析・比較機能 -->
+        <div
+          id="analysis"
+          class="api-section"
+          data-category="analysis"
+          style="display: none"
+        >
+          <h2>動画分析・比較機能</h2>
+
+          <div class="api-method">
+            <h3>compare_videos(video_ids, metrics=None)</h3>
+            <div class="method-info">
+              <p class="description">複数の動画を比較分析します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_ids</code></td>
+                  <td>list</td>
+                  <td>動画IDのリスト（最大50件）</td>
+                </tr>
+                <tr>
+                  <td><code>metrics</code></td>
+                  <td>list, optional</td>
+                  <td>比較する指標 ['views', 'likes', 'comments', 'duration']</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>comparison = yt.compare_videos(["dQw4w9WgXcQ", "jNQXAC9IVRw"])
+print(f"最も再生された動画: {comparison['rankings']['views'][0]['title']}")
+print(f"最高エンゲージメント: {comparison['rankings']['engagement'][0]['title']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>analyze_channel_performance(channel_id, days_back=30, max_videos=50)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルのパフォーマンス分析を行います。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>days_back</code></td>
+                  <td>int</td>
+                  <td>分析対象期間（日数、デフォルト: 30）</td>
+                </tr>
+                <tr>
+                  <td><code>max_videos</code></td>
+                  <td>int</td>
+                  <td>分析する最大動画数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>analysis = yt.analyze_channel_performance("UC_x5XG1OV2P6uZZ5FSM9Ttw", days_back=30)
+print(f"📊 平均エンゲージメント率: {analysis['engagement_rate']:.2f}%")
+print(f"🏆 トップパフォーマー: {analysis['top_performer']['title']}")
+print(f"📈 成長率: {analysis['growth_rate']:.1f}%")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- データエクスポート機能 -->
+        <div
+          id="export"
+          class="api-section"
+          data-category="export"
+          style="display: none"
+        >
+          <h2>データエクスポート機能</h2>
+
+          <div class="api-method">
+            <h3>export_search_results_to_csv(query, filename=None, max_results=100)</h3>
+            <div class="method-info">
+              <p class="description">検索結果をCSVファイルにエクスポートします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>filename</code></td>
+                  <td>str, optional</td>
+                  <td>出力ファイル名（Noneの場合は自動生成）</td>
+                </tr>
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大結果数（デフォルト: 100）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>filename = yt.export_search_results_to_csv(
+    "Python プログラミング", 
+    filename="python_videos_report.csv",
+    max_results=200
+)
+print(f"📄 CSVファイルを作成しました: {filename}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>export_channel_videos_to_json(channel_id, filename=None, max_videos=100)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルの動画情報をJSONファイルにエクスポートします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>チャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>filename</code></td>
+                  <td>str, optional</td>
+                  <td>出力ファイル名（Noneの場合は自動生成）</td>
+                </tr>
+                <tr>
+                  <td><code>max_videos</code></td>
+                  <td>int</td>
+                  <td>最大動画数（デフォルト: 100）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>json_file = yt.export_channel_videos_to_json(
+    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    filename="channel_analysis.json",
+    max_videos=300
+)
+print(f"📋 JSONデータファイル: {json_file}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 高度な検索機能 -->
+        <div
+          id="advanced"
+          class="api-section"
+          data-category="advanced"
+          style="display: none"
+        >
+          <h2>高度な検索機能</h2>
+
+          <div class="api-method">
+            <h3>search_videos_advanced(query, filters=None, sort_by="relevance")</h3>
+            <div class="method-info">
+              <p class="description">高度な動画検索（複数フィルター対応）を行います。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>query</code></td>
+                  <td>str</td>
+                  <td>検索キーワード</td>
+                </tr>
+                <tr>
+                  <td><code>filters</code></td>
+                  <td>dict, optional</td>
+                  <td>フィルター条件辞書</td>
+                </tr>
+                <tr>
+                  <td><code>sort_by</code></td>
+                  <td>str</td>
+                  <td>ソート順序（デフォルト: "relevance"）</td>
+                </tr>
+              </table>
+              <h4>利用可能なフィルター</h4>
+              <ul>
+                <li><code>min_duration</code>: 最小動画長（秒）</li>
+                <li><code>max_duration</code>: 最大動画長（秒）</li>
+                <li><code>min_views</code>: 最小再生回数</li>
+                <li><code>published_after</code>: 公開日以降（YYYY-MM-DD）</li>
+                <li><code>published_before</code>: 公開日以前（YYYY-MM-DD）</li>
+                <li><code>channel_subscriber_min</code>: チャンネル最小登録者数</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>filters = {
+    'min_duration': 600,    # 10分以上
+    'max_duration': 1800,   # 30分以下
+    'min_views': 50000,     # 5万回以上
+    'published_after': '2023-01-01',
+    'channel_subscriber_min': 10000  # 登録者1万人以上
+}
+
+results = yt.search_videos_advanced(
+    "機械学習 チュートリアル", 
+    filters=filters,
+    sort_by='viewCount'
+)
+
+for video in results[:5]:
+    print(f"🎬 {video['snippet']['title']}")
+    print(f"   再生回数: {video['statistics']['viewCount']}")
+    print(f"   チャンネル: {video['snippet']['channelTitle']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- バッチ処理機能 -->
+        <div
+          id="batch"
+          class="api-section"
+          data-category="batch"
+          style="display: none"
+        >
+          <h2>バッチ処理機能</h2>
+
+          <div class="api-method">
+            <h3>batch_analyze_channels(channel_ids, metrics=["subscribers", "videos", "views"])</h3>
+            <div class="method-info">
+              <p class="description">複数チャンネルの一括分析を行います。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_ids</code></td>
+                  <td>list</td>
+                  <td>チャンネルIDのリスト（最大50件）</td>
+                </tr>
+                <tr>
+                  <td><code>metrics</code></td>
+                  <td>list</td>
+                  <td>分析する指標のリスト</td>
+                </tr>
+              </table>
+              <h4>利用可能な指標</h4>
+              <ul>
+                <li><code>subscribers</code>: 登録者数</li>
+                <li><code>videos</code>: 動画数</li>
+                <li><code>views</code>: 総再生回数</li>
+                <li><code>engagement</code>: エンゲージメント率</li>
+                <li><code>growth_rate</code>: 成長率</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>channel_ids = [
+    "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    "UCxxxxxxxxxxxxxxxxxxxxxxx",
+    "UCyyyyyyyyyyyyyyyyyyyyyyy"
+]
+
+analysis = yt.batch_analyze_channels(
+    channel_ids, 
+    metrics=["subscribers", "videos", "views", "engagement"]
+)
+
+print(f"📊 分析結果サマリー:")
+print(f"   総登録者数: {analysis['summary']['total_subscribers']:,}")
+print(f"   総動画数: {analysis['summary']['total_videos']:,}")
+print(f"   平均エンゲージメント率: {analysis['summary']['avg_engagement']:.2f}%")
+
+print(f"\n🏆 トップチャンネル:")
+for rank, channel in enumerate(analysis['rankings']['subscribers'][:3], 1):
+    print(f"   {rank}. {channel['title']}: {channel['subscribers']:,}人")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 通知・監視機能 -->
+        <div
+          id="monitor"
+          class="api-section"
+          data-category="monitor"
+          style="display: none"
+        >
+          <h2>通知・監視機能</h2>
+
+          <div class="api-method">
+            <h3>monitor_channel_for_new_videos(channel_id, last_video_id=None)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルの新しい動画をチェックします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>監視するチャンネルID</td>
+                </tr>
+                <tr>
+                  <td><code>last_video_id</code></td>
+                  <td>str</td>
+                  <td>前回チェック時の最新動画ID</td>
+                </tr>
+              </table>
+              <h4>戻り値の構造</h4>
+              <ul>
+                <li><code>count</code>: 新しい動画の数</li>
+                <li><code>new_videos</code>: 新しい動画のリスト</li>
+                <li><code>latest_video_id</code>: 最新動画のID</li>
+                <li><code>channel_info</code>: チャンネル基本情報</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>result = yt.monitor_channel_for_new_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+
+if result['count'] > 0:
+    channel_name = result['channel_info']['title']
+    print(f"🆕 {channel_name} に新しい動画が{result['count']}本投稿されました！")
+    
+    for video in result['new_videos']:
+        print(f"   📹 {video['title']}")
+        print(f"      公開日: {video['published_at']}")
+        print(f"      URL: https://youtube.com/watch?v={video['video_id']}")
+else:
+    print("📭 新しい動画はありません")
+
+# 継続監視の例
+import time
+
+def continuous_monitor(channel_id, check_interval=3600):
+    """継続的な監視（1時間間隔）"""
+    last_video_id = None
+    
+    while True:
+        try:
+            result = yt.monitor_channel_for_new_videos(channel_id, last_video_id)
+            
+            if result['count'] > 0:
+                print(f"🚨 新動画検出: {result['count']}本")
+                # 通知処理（メール、Slack等）
+                # send_notification(result)
+                
+                last_video_id = result['latest_video_id']
+            
+            time.sleep(check_interval)
+            
+        except YouTubeAPIError as e:
+            print(f"❌ 監視エラー: {e}")
+            time.sleep(300)  # 5分待機後再試行</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ユーティリティ機能 -->
+        <div
+          id="utility"
+          class="api-section"
+          data-category="utility"
+          style="display: none"
+        >
+          <h2>ユーティリティ機能</h2>
+
+          <div class="api-method">
+            <h3>generate_video_summary(video_id)</h3>
+            <div class="method-info">
+              <p class="description">動画の包括的なサマリーを生成します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>video_id</code></td>
+                  <td>str</td>
+                  <td>動画ID</td>
+                </tr>
+              </table>
+              <h4>戻り値の構造</h4>
+              <ul>
+                <li><code>basic_info</code>: 基本情報（タイトル、チャンネル、公開日等）</li>
+                <li><code>performance</code>: パフォーマンス指標（再生数、いいね数等）</li>
+                <li><code>content</code>: コンテンツ情報（説明文、タグ、カテゴリ等）</li>
+                <li><code>analysis</code>: 分析結果（スコア、分類等）</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>summary = yt.generate_video_summary("dQw4w9WgXcQ")
+
+print(f"🎬 動画サマリー")
+print(f"タイトル: {summary['basic_info']['title']}")
+print(f"チャンネル: {summary['basic_info']['channel']}")
+print(f"公開日: {summary['basic_info']['published']}")
+print(f"長さ: {summary['basic_info']['duration']}")
+
+print(f"\n📊 パフォーマンス")
+print(f"再生回数: {summary['performance']['views_formatted']}")
+print(f"いいね数: {summary['performance']['likes']:,}")
+print(f"エンゲージメント率: {summary['performance']['engagement_rate']:.2f}%")
+
+print(f"\n🔍 分析結果")
+print(f"パフォーマンススコア: {summary['analysis']['performance_score']}/100")
+print(f"コンテンツタイプ: {summary['analysis']['content_type']}")
+print(f"エンゲージメントレベル: {summary['analysis']['engagement_level']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>calculate_performance_score(views, likes, comments, duration)</h3>
+            <div class="method-info">
+              <p class="description">動画のパフォーマンススコアを計算します（0-100）。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>views</code></td>
+                  <td>int</td>
+                  <td>再生回数</td>
+                </tr>
+                <tr>
+                  <td><code>likes</code></td>
+                  <td>int</td>
+                  <td>いいね数</td>
+                </tr>
+                <tr>
+                  <td><code>comments</code></td>
+                  <td>int</td>
+                  <td>コメント数</td>
+                </tr>
+                <tr>
+                  <td><code>duration</code></td>
+                  <td>int</td>
+                  <td>動画の長さ（秒）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>score = yt.calculate_performance_score(
+    views=100000,
+    likes=5000, 
+    comments=500,
+    duration=600
+)
+print(f"パフォーマンススコア: {score:.1f}/100")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>classify_video_length(duration)</h3>
+            <div class="method-info">
+              <p class="description">動画の長さで分類します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>duration</code></td>
+                  <td>int</td>
+                  <td>動画の長さ（秒）</td>
+                </tr>
+              </table>
+              <h4>分類基準</h4>
+              <ul>
+                <li><code>&lt; 60秒</code>: "ショート（1分未満）"</li>
+                <li><code>60-300秒</code>: "短編（5分未満）"</li>
+                <li><code>300-1200秒</code>: "中編（20分未満）"</li>
+                <li><code>&gt;= 1200秒</code>: "長編（20分以上）"</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>classification = yt.classify_video_length(450)  # 7分30秒
+print(f"動画分類: {classification}")  # "短編（5分未満）"</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>classify_engagement(engagement_rate)</h3>
+            <div class="method-info">
+              <p class="description">エンゲージメント率で分類します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>engagement_rate</code></td>
+                  <td>float</td>
+                  <td>エンゲージメント率（%）</td>
+                </tr>
+              </table>
+              <h4>分類基準</h4>
+              <ul>
+                <li><code>&gt;= 10%</code>: "非常に高い"</li>
+                <li><code>5-10%</code>: "高い"</li>
+                <li><code>2-5%</code>: "普通"</li>
+                <li><code>1-2%</code>: "低い"</li>
+                <li><code>&lt; 1%</code>: "非常に低い"</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>level = yt.classify_engagement(3.5)
+print(f"エンゲージメントレベル: {level}")  # "普通"</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>validate_youtube_url(url)</h3>
+            <div class="method-info">
+              <p class="description">YouTube URLの有効性を検証します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>url</code></td>
+                  <td>str</td>
+                  <td>検証するURL</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>is_valid = yt.validate_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+if is_valid:
+    print("✅ 有効なYouTube URLです")
+else:
+    print("❌ 無効なURLです")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>format_duration(seconds)</h3>
+            <div class="method-info">
+              <p class="description">秒数を人間が読みやすい形式にフォーマットします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>seconds</code></td>
+                  <td>int</td>
+                  <td>秒数</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>formatted = yt.format_duration(3661)  # 1時間1分1秒
+print(f"動画の長さ: {formatted}")  # "1:01:01"
+
+formatted_short = yt.format_duration(125)  # 2分5秒
+print(f"短い動画: {formatted_short}")  # "2:05"</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>generate_report(data, report_type="summary")</h3>
+            <div class="method-info">
+              <p class="description">データから分析レポートを生成します。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>data</code></td>
+                  <td>dict/list</td>
+                  <td>レポート対象のデータ</td>
+                </tr>
+                <tr>
+                  <td><code>report_type</code></td>
+                  <td>str</td>
+                  <td>レポートタイプ（'summary', 'detailed', 'comparison'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># チャンネル分析レポート
+channel_data = yt.get_channel_info("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+videos_data = yt.get_all_channel_videos("UC_x5XG1OV2P6uZZ5FSM9Ttw", max_results=50)
+
+report = yt.generate_report({
+    'channel': channel_data,
+    'videos': videos_data
+}, report_type="detailed")
+
+print(report['summary'])
+print(f"\n{report['analysis']}")
+print(f"\n{report['recommendations']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 YouTube API リファレンス - 完全版. All rights reserved.</p>
+        <p>108の実装済みメソッドを完全網羅 | 最終更新: 2025年6月</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
