@@ -3222,6 +3222,16 @@ print("📈 定期的にこの分析を実行して、チャンネルの成長�
 - generate_video_summary(), _calculate_performance_score()
 - _classify_video_length(), _classify_engagement()
 
+**OAuth認証管理（8）**
+
+- setup_oauth_interactive(), get_oauth_authorization_url(), complete_oauth_flow()
+- get_oauth_info(), check_oauth_scopes(), refresh_oauth_token()
+- revoke_oauth_token(), create_oauth_config_template()
+
+**OAuth必須機能（6）**
+
+- get_my_channel(), get_my_subscriptions(), get_my_playlists()
+- get_my_videos(), upload_video(), subscribe_to_channel()
 
 **最終更新**: 2025年 6月  
 **関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)
