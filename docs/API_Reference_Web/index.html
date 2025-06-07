@@ -43,6 +43,19 @@
               >
             </li>
             <li>
+              <a href="#oauth" class="nav-link" data-category="oauth"
+                >OAuth認証管理</a
+              >
+            </li>
+            <li>
+              <a
+                href="#oauth-required"
+                class="nav-link"
+                data-category="oauth-required"
+                >OAuth必須機能</a
+              >
+            </li>
+            <li>
               <a href="#search" class="nav-link" data-category="search"
                 >検索機能</a
               >
@@ -163,7 +176,7 @@
           <p>
             このドキュメントは、YouTube.py3ライブラリの全108メソッドを含む包括的なリファレンスです。左のナビゲーションから各カテゴリを選択するか、上部の検索ボックスで特定のAPIを検索できます。
           </p>
-          <div class="stats-summary">
+                    <div class="stats-summary">
             <h3>📊 機能統計</h3>
             <ul>
               <li>基本クラス: 2メソッド</li>
@@ -174,9 +187,11 @@
               <li>簡略化メソッド: 5メソッド</li>
               <li>ヘルパーメソッド: 15メソッド</li>
               <li>プレイリスト管理: 6メソッド</li>
+              <li>OAuth認証管理: 8メソッド</li>
+              <li>OAuth必須機能: 6メソッド</li>
               <li>その他機能: 62メソッド</li>
             </ul>
-            <p><strong>合計: 108の実装済みメソッド</strong></p>
+            <p><strong>合計: 122の実装済みメソッド</strong></p>
           </div>
         </div>
 
@@ -3035,6 +3050,589 @@ report = yt.generate_report({
 print(report['summary'])
 print(f"\n{report['analysis']}")
 print(f"\n{report['recommendations']}")</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OAuth認証管理 -->
+        <div
+          id="oauth"
+          class="api-section"
+          data-category="oauth"
+          style="display: none"
+        >
+          <h2>OAuth認証管理</h2>
+
+          <div class="api-method">
+            <h3>YouTubeAPI(api_key, oauth_credentials, oauth_config)</h3>
+            <div class="method-info">
+              <p class="description">
+                OAuth対応のYouTube APIクライアントを初期化します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>api_key</code></td>
+                  <td>str</td>
+                  <td>YouTube Data API v3のAPIキー（読み取り専用操作用）</td>
+                </tr>
+                <tr>
+                  <td><code>oauth_credentials</code></td>
+                  <td>object</td>
+                  <td>OAuth認証情報オブジェクト（オプション）</td>
+                </tr>
+                <tr>
+                  <td><code>oauth_config</code></td>
+                  <td>dict</td>
+                  <td>OAuth設定辞書（オプション）</td>
+                </tr>
+              </table>
+              <h4>OAuth設定辞書の構造</h4>
+              <ul>
+                <li>
+                  <code>client_secrets_file</code>: Google Cloud
+                  Consoleからダウンロードしたファイル
+                </li>
+                <li>
+                  <code>scopes</code>: 必要なスコープのリスト (['readonly',
+                  'upload', 'full', 'force_ssl'])
+                </li>
+                <li><code>token_file</code>: 認証トークン保存ファイル名</li>
+                <li><code>port</code>: ローカルサーバーポート番号</li>
+                <li><code>auto_open_browser</code>: ブラウザ自動起動フラグ</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># APIキーのみ（読み取り専用）
+yt = YouTubeAPI(api_key="YOUR_API_KEY")
+
+# OAuth設定で初期化
+oauth_config = {
+    'client_secrets_file': 'client_secrets.json',
+    'scopes': ['full'],
+    'token_file': 'youtube_token.pickle',
+    'port': 8080,
+    'auto_open_browser': True
+}
+yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_config=oauth_config)</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              setup_oauth_interactive(client_secrets_file, scopes, token_file)
+            </h3>
+            <div class="method-info">
+              <p class="description">対話的にOAuth認証をセットアップします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>client_secrets_file</code></td>
+                  <td>str</td>
+                  <td>クライアントシークレットファイルのパス</td>
+                </tr>
+                <tr>
+                  <td><code>scopes</code></td>
+                  <td>list</td>
+                  <td>必要なスコープ（デフォルト: ['readonly']）</td>
+                </tr>
+                <tr>
+                  <td><code>token_file</code></td>
+                  <td>str</td>
+                  <td>
+                    トークン保存ファイル（デフォルト: 'youtube_token.pickle'）
+                  </td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>yt = YouTubeAPI(api_key="YOUR_API_KEY")
+success = yt.setup_oauth_interactive(
+    'client_secrets.json',
+    scopes=['full'],
+    token_file='my_token.pickle'
+)
+if success:
+    print("OAuth認証が完了しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              get_oauth_authorization_url(client_secrets_file, scopes, state)
+            </h3>
+            <div class="method-info">
+              <p class="description">
+                OAuth認証URLを取得します（手動認証用）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>client_secrets_file</code></td>
+                  <td>str</td>
+                  <td>クライアントシークレットファイル</td>
+                </tr>
+                <tr>
+                  <td><code>scopes</code></td>
+                  <td>list</td>
+                  <td>必要なスコープ</td>
+                </tr>
+                <tr>
+                  <td><code>state</code></td>
+                  <td>str</td>
+                  <td>状態パラメータ（オプション）</td>
+                </tr>
+              </table>
+              <h4>戻り値</h4>
+              <p>tuple: (認証URL, flowオブジェクト)</p>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>auth_url, flow = yt.get_oauth_authorization_url('client_secrets.json', ['full'])
+print(f"このURLにアクセスしてください: {auth_url}")
+# ユーザーがブラウザで認証を完了</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>complete_oauth_flow(flow, authorization_code, token_file)</h3>
+            <div class="method-info">
+              <p class="description">
+                OAuth認証フローを完了します（手動認証用）。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>flow</code></td>
+                  <td>object</td>
+                  <td>get_oauth_authorization_urlで取得したflowオブジェクト</td>
+                </tr>
+                <tr>
+                  <td><code>authorization_code</code></td>
+                  <td>str</td>
+                  <td>ブラウザで取得した認証コード</td>
+                </tr>
+                <tr>
+                  <td><code>token_file</code></td>
+                  <td>str</td>
+                  <td>トークン保存ファイル（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>auth_url, flow = yt.get_oauth_authorization_url('client_secrets.json')
+print(f"認証URL: {auth_url}")
+
+# ユーザーがブラウザで認証後、認証コードを取得
+code = input("認証コードを入力してください: ")
+success = yt.complete_oauth_flow(flow, code, 'my_token.pickle')
+if success:
+    print("認証が完了しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_oauth_info()</h3>
+            <div class="method-info">
+              <p class="description">現在のOAuth認証情報を取得します。</p>
+              <h4>戻り値</h4>
+              <ul>
+                <li><code>authenticated</code>: 認証状態（bool）</li>
+                <li><code>scopes</code>: 許可されたスコープのリスト</li>
+                <li><code>expires_at</code>: トークンの有効期限</li>
+                <li><code>token_valid</code>: トークンの有効性</li>
+                <li>
+                  <code>has_refresh_token</code>: リフレッシュトークンの有無
+                </li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>info = yt.get_oauth_info()
+print(f"認証状態: {info['authenticated']}")
+print(f"許可スコープ: {info['scopes']}")
+print(f"トークン有効: {info['token_valid']}")
+if info['expires_at']:
+    print(f"有効期限: {info['expires_at']}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>check_oauth_scopes(required_scopes)</h3>
+            <div class="method-info">
+              <p class="description">
+                必要なスコープが許可されているかチェックします。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>required_scopes</code></td>
+                  <td>list</td>
+                  <td>必要なスコープリスト</td>
+                </tr>
+              </table>
+              <h4>戻り値</h4>
+              <ul>
+                <li>
+                  <code>has_all_scopes</code>: 全てのスコープが許可されているか
+                </li>
+                <li>
+                  <code>missing_scopes</code>: 不足しているスコープのリスト
+                </li>
+                <li><code>current_scopes</code>: 現在許可されているスコープ</li>
+              </ul>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>scope_check = yt.check_oauth_scopes(['upload', 'full'])
+if scope_check['has_all_scopes']:
+    print("✅ 必要なスコープがすべて許可されています")
+else:
+    print(f"❌ 不足スコープ: {scope_check['missing_scopes']}")
+    print("再認証が必要です")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>refresh_oauth_token(token_file)</h3>
+            <div class="method-info">
+              <p class="description">OAuth認証トークンをリフレッシュします。</p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>token_file</code></td>
+                  <td>str</td>
+                  <td>トークンファイル（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>try:
+    success = yt.refresh_oauth_token('my_token.pickle')
+    if success:
+        print("トークンをリフレッシュしました")
+except YouTubeAPIError as e:
+    print(f"リフレッシュ失敗: {e}")
+    # 再認証が必要</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>revoke_oauth_token(token_file)</h3>
+            <div class="method-info">
+              <p class="description">
+                OAuth認証トークンを無効化し、認証を解除します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>token_file</code></td>
+                  <td>str</td>
+                  <td>削除するトークンファイル（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>success = yt.revoke_oauth_token('my_token.pickle')
+if success:
+    print("認証を解除しました")
+    print("APIキーのみでの読み取り専用モードに切り替わりました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>create_oauth_config_template(output_file)</h3>
+            <div class="method-info">
+              <p class="description">
+                OAuth設定テンプレートファイルを作成します。
+              </p>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>output_file</code></td>
+                  <td>str</td>
+                  <td>出力ファイル名（デフォルト: 'oauth_config.json'）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># 設定テンプレート作成
+template_file = YouTubeAPI.create_oauth_config_template('my_oauth_config.json')
+print(f"設定テンプレートを作成: {template_file}")
+
+# テンプレートを編集後、設定ファイルとして使用
+import json
+with open('my_oauth_config.json', 'r') as f:
+    oauth_config = json.load(f)
+
+# クライアントシークレットファイルのパスを更新
+oauth_config['client_secrets_file'] = 'path/to/your/client_secrets.json'
+oauth_config['scopes'] = ['full']  # 必要なスコープに変更
+
+yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_config=oauth_config)</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OAuth必須機能 -->
+        <div
+          id="oauth-required"
+          class="api-section"
+          data-category="oauth-required"
+          style="display: none"
+        >
+          <h2>OAuth必須機能</h2>
+          <p class="description">
+            以下の機能はOAuth認証が必要です。事前に認証設定を完了してください。
+          </p>
+
+          <div class="api-method">
+            <h3>get_my_channel()</h3>
+            <div class="method-info">
+              <p class="description">自分のチャンネル情報を取得します。</p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>try:
+    my_channel = yt.get_my_channel()
+    print(f"チャンネル名: {my_channel['snippet']['title']}")
+    print(f"登録者数: {my_channel['statistics']['subscriberCount']}")
+except YouTubeAPIError as e:
+    if "OAuth認証が必要" in str(e):
+        print("先にOAuth認証を設定してください")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_my_subscriptions(max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">
+                自分のサブスクリプション一覧を取得します。
+              </p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>subscriptions = yt.get_my_subscriptions(100)
+print(f"登録チャンネル数: {len(subscriptions)}")
+
+for sub in subscriptions[:5]:  # 最初の5つを表示
+    channel_name = sub['snippet']['title']
+    channel_id = sub['snippet']['resourceId']['channelId']
+    print(f"📺 {channel_name} ({channel_id})")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_my_playlists(max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">自分のプレイリスト一覧を取得します。</p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlists = yt.get_my_playlists()
+print(f"プレイリスト数: {len(playlists)}")
+
+for playlist in playlists:
+    title = playlist['snippet']['title']
+    privacy = playlist['status']['privacyStatus']
+    item_count = playlist['contentDetails']['itemCount']
+    print(f"🎵 {title} ({privacy}, {item_count}本)")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>get_my_videos(max_results=50)</h3>
+            <div class="method-info">
+              <p class="description">
+                自分がアップロードした動画一覧を取得します。
+              </p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>max_results</code></td>
+                  <td>int</td>
+                  <td>最大取得件数（デフォルト: 50）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>my_videos = yt.get_my_videos(20)
+print(f"アップロード動画数: {len(my_videos)}")
+
+for video in my_videos:
+    video_id = video['snippet']['resourceId']['videoId']
+    # 詳細情報を取得
+    video_details = yt.get_video_info(video_id)
+    title = video_details['snippet']['title']
+    views = video_details['statistics'].get('viewCount', 0)
+    print(f"🎬 {title}: {views:,}回再生")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>
+              upload_video(title, description, tags, category_id,
+              privacy_status, video_file)
+            </h3>
+            <div class="method-info">
+              <p class="description">動画をアップロードします。</p>
+              <div class="oauth-badge">🔐 OAuth認証必須 (upload スコープ)</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str</td>
+                  <td>動画タイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str</td>
+                  <td>動画説明</td>
+                </tr>
+                <tr>
+                  <td><code>tags</code></td>
+                  <td>list</td>
+                  <td>タグリスト（オプション）</td>
+                </tr>
+                <tr>
+                  <td><code>category_id</code></td>
+                  <td>str</td>
+                  <td>カテゴリID（デフォルト: "22"）</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str</td>
+                  <td>プライバシー設定（"private", "public", "unlisted"）</td>
+                </tr>
+                <tr>
+                  <td><code>video_file</code></td>
+                  <td>object</td>
+                  <td>動画ファイルオブジェクト（オプション）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># まずuploadスコープがあるかチェック
+scope_check = yt.check_oauth_scopes(['upload'])
+if not scope_check['has_all_scopes']:
+    print("アップロードにはuploadスコープが必要です")
+    print("再認証してください")
+else:
+    # 動画アップロード
+    from googleapiclient.http import MediaFileUpload
+    
+    media = MediaFileUpload('my_video.mp4', chunksize=-1, resumable=True)
+    
+    video = yt.upload_video(
+        title="Python チュートリアル動画",
+        description="初心者向けPython講座の第1回です",
+        tags=["Python", "プログラミング", "チュートリアル"],
+        privacy_status="private",  # 最初はプライベートで
+        video_file=media
+    )
+    
+    video_id = video['id']
+    print(f"✅ 動画アップロード完了: https://youtube.com/watch?v={video_id}")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>create_playlist(title, description, privacy_status)</h3>
+            <div class="method-info">
+              <p class="description">プレイリストを作成します。</p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>title</code></td>
+                  <td>str</td>
+                  <td>プレイリストタイトル</td>
+                </tr>
+                <tr>
+                  <td><code>description</code></td>
+                  <td>str</td>
+                  <td>プレイリスト説明（デフォルト: ""）</td>
+                </tr>
+                <tr>
+                  <td><code>privacy_status</code></td>
+                  <td>str</td>
+                  <td>プライバシー設定（デフォルト: "private"）</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code>playlist = yt.create_playlist(
+    title="Python学習プレイリスト",
+    description="Pythonプログラミングの学習用動画をまとめたプレイリストです",
+    privacy_status="public"
+)
+
+playlist_id = playlist['id']
+playlist_url = f"https://youtube.com/playlist?list={playlist_id}"
+print(f"✅ プレイリスト作成完了: {playlist_url}")
+
+# プレイリストに動画を追加
+yt.add_video_to_playlist(playlist_id, "dQw4w9WgXcQ")
+print("動画をプレイリストに追加しました")</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-method">
+            <h3>subscribe_to_channel(channel_id)</h3>
+            <div class="method-info">
+              <p class="description">チャンネルをサブスクライブします。</p>
+              <div class="oauth-badge">🔐 OAuth認証必須</div>
+              <h4>パラメータ</h4>
+              <table class="params-table">
+                <tr>
+                  <td><code>channel_id</code></td>
+                  <td>str</td>
+                  <td>サブスクライブするチャンネルのID</td>
+                </tr>
+              </table>
+              <div class="code-example">
+                <h4>使用例</h4>
+                <pre><code># 特定のチャンネルをサブスクライブ
+result = yt.subscribe_to_channel("UC_x5XG1OV2P6uZZ5FSM9Ttw")
+if result:
+    print("✅ チャンネル登録完了")
+    
+    # 登録確認
+    subscriptions = yt.get_my_subscriptions(10)
+    for sub in subscriptions:
+        if sub['snippet']['resourceId']['channelId'] == "UC_x5XG1OV2P6uZZ5FSM9Ttw":
+            print(f"確認: {sub['snippet']['title']} に登録済み")
+            break</code></pre>
               </div>
             </div>
           </div>

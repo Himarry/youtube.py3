@@ -26,6 +26,23 @@ body {
     z-index: 100;
 }
 
+.oauth-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 8px 0;
+  box-shadow: 0 2px 4px rgba(238, 90, 82, 0.3);
+}
+
+.oauth-badge::before {
+  content: "🔐 ";
+  margin-right: 2px;
+}
+
 .header .container {
     display: flex;
     justify-content: space-between;

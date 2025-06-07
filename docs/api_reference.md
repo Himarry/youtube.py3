@@ -27,6 +27,8 @@ YouTube.py3の全メソッドの詳細な説明です。実装済みのメソッ
 - [バッチ処理・一括操作](#バッチ処理一括操作)
 - [通知・監視機能](#通知監視機能)
 - [ユーティリティ機能](#ユーティリティ機能)
+- [OAuth認証管理](#oauth認証管理)
+- [OAuth必須機能](#oauth必須機能)
 - [エラーハンドリング](#エラーハンドリング)
 - [使用パターン集](#使用パターン集)
 
@@ -2089,7 +2091,7 @@ channel_id = "UC_x5XG1OV2P6uZZ5FSM9Ttw"
 channel = yt.get_channel_info(channel_id)
 videos = yt.get_channel_videos_paginated(channel_id, max_results=10)
 
-print(f"📺 {channel['snippet']['title']}")
+print(f"📺 チャンネル名: {channel['snippet']['title']}")
 print(f"👥 登録者数: {channel['statistics']['subscriberCount']}")
 print("🆕 最新動画:")
 for video in videos['items']:
@@ -2313,8 +2315,823 @@ channels_to_monitor = [
 
 ---
 
-**最終更新**: 2024年12月  
-**関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)
+## OAuth認証管理
+
+### YouTubeAPI(api_key, oauth_credentials, oauth_config)
+
+```python
+class YouTubeAPI(api_key=None, oauth_credentials=None, oauth_config=None)
+```
+
+OAuth対応のYouTube APIクライアントを初期化します。
+
+**パラメータ:**
+- `api_key` (str): YouTube Data API v3のAPIキー（読み取り専用操作用）
+- `oauth_credentials`: OAuth認証情報オブジェクト（オプション）
+- `oauth_config` (dict): OAuth設定辞書（オプション）
+
+**OAuth設定辞書の構造:**
+```python
+{
+    'client_secrets_file': 'client_secrets.json',  # Google Cloud Consoleからダウンロードしたファイル
+    'scopes': ['full'],  # 必要なスコープのリスト
+    'token_file': 'youtube_token.pickle',  # 認証トークン保存ファイル名
+    'port': 8080,  # ローカルサーバーポート番号
+    'auto_open_browser': True  # ブラウザ自動起動フラグ
+}
+```
+
+**利用可能なスコープ:**
+- `'readonly'`: 読み取り専用アクセス
+- `'upload'`: 動画アップロード権限
+- `'full'`: 全機能アクセス権限
+- `'force_ssl'`: SSL強制アクセス権限
+
+**使用例:**
+```python
+# APIキーのみ（読み取り専用）
+yt = YouTubeAPI(api_key="YOUR_API_KEY")
+
+# OAuth設定で初期化
+oauth_config = {
+    'client_secrets_file': 'client_secrets.json',
+    'scopes': ['full'],
+    'token_file': 'youtube_token.pickle',
+    'port': 8080,
+    'auto_open_browser': True
+}
+yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_config=oauth_config)
+
+# 既存の認証情報を使用
+yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_credentials=existing_credentials)
+```
+
+### setup_oauth_interactive()
+
+```python
+def setup_oauth_interactive(client_secrets_file, scopes=None, token_file=None) -> bool
+```
+
+対話的にOAuth認証をセットアップします。
+
+**パラメータ:**
+- `client_secrets_file` (str): クライアントシークレットファイルのパス
+- `scopes` (list): 必要なスコープ（デフォルト: ['readonly']）
+- `token_file` (str): トークン保存ファイル（デフォルト: 'youtube_token.pickle'）
+
+**戻り値:**
+- `bool`: セットアップ成功フラグ
+
+**例外:**
+- `YouTubeAPIError`: OAuth設定に失敗した場合
+
+**使用例:**
+```python
+yt = YouTubeAPI(api_key="YOUR_API_KEY")
+
+# 基本的なセットアップ
+success = yt.setup_oauth_interactive('client_secrets.json')
+
+# 詳細設定
+success = yt.setup_oauth_interactive(
+    'client_secrets.json',
+    scopes=['full'],
+    token_file='my_token.pickle'
+)
+
+if success:
+    print("✅ OAuth認証が完了しました")
+    # これで OAuth が必要なメソッドが使用可能
+    my_channel = yt.get_my_channel()
+    print(f"チャンネル名: {my_channel['snippet']['title']}")
+```
+### get_oauth_authorization_url()
+
+```python
+def get_oauth_authorization_url(client_secrets_file, scopes=None, state=None) -> tuple
+```
+
+OAuth認証URLを取得します（手動認証用）。
+
+**パラメータ:**
+- `client_secrets_file` (str): クライアントシークレットファイル
+- `scopes` (list): 必要なスコープ
+- `state` (str): 状態パラメータ（オプション）
+
+**戻り値:**
+- `tuple`: (認証URL, flowオブジェクト)
+
+**使用例:**
+```python
+# 認証URLを取得
+auth_url, flow = yt.get_oauth_authorization_url(
+    'client_secrets.json', 
+    ['full']
+)
+
+print(f"🔗 このURLにアクセスしてください:")
+print(auth_url)
+print()
+print("ブラウザで認証を完了し、表示された認証コードを次のステップで入力してください。")
+
+# ユーザーがブラウザで認証を完了
+# 認証コードが表示される
+```
+
+### complete_oauth_flow()
+
+```python
+def complete_oauth_flow(flow, authorization_code, token_file=None) -> bool
+```
+
+OAuth認証フローを完了します（手動認証用）。
+
+**パラメータ:**
+- `flow`: get_oauth_authorization_urlで取得したflowオブジェクト
+- `authorization_code` (str): ブラウザで取得した認証コード
+- `token_file` (str): トークン保存ファイル（オプション）
+
+**戻り値:**
+- `bool`: 認証完了フラグ
+
+**使用例:**
+```python
+# 前のステップで取得したflow使用
+auth_url, flow = yt.get_oauth_authorization_url('client_secrets.json', ['full'])
+print(f"認証URL: {auth_url}")
+
+# ユーザーがブラウザで認証後、認証コードを取得
+code = input("📝 認証コードを入力してください: ")
+
+success = yt.complete_oauth_flow(flow, code, 'my_token.pickle')
+if success:
+    print("✅ 認証が完了しました")
+    print("OAuth必須機能が利用可能になりました")
+```
+### get_oauth_info()
+
+```python
+def get_oauth_info() -> dict
+```
+
+現在のOAuth認証情報を取得します。
+
+**戻り値:**
+- `dict`: OAuth認証情報
+  - `'authenticated'`: 認証状態（bool）
+  - `'scopes'`: 許可されたスコープのリスト
+  - `'expires_at'`: トークンの有効期限
+  - `'token_valid'`: トークンの有効性
+  - `'has_refresh_token'`: リフレッシュトークンの有無
+
+**使用例:**
+```python
+info = yt.get_oauth_info()
+print(f"🔐 認証状態: {info['authenticated']}")
+print(f"📋 許可スコープ: {info['scopes']}")
+print(f"✅ トークン有効: {info['token_valid']}")
+
+if info['expires_at']:
+    print(f"⏰ 有効期限: {info['expires_at']}")
+
+if not info['authenticated']:
+    print("❌ OAuth認証が必要です")
+elif not info['token_valid']:
+    print("⚠️ トークンをリフレッシュしてください")
+```
+
+### check_oauth_scopes()
+
+```python
+def check_oauth_scopes(required_scopes) -> dict
+```
+
+必要なスコープが許可されているかチェックします。
+
+**パラメータ:**
+- `required_scopes` (list): 必要なスコープリスト
+
+**戻り値:**
+- `dict`: スコープチェック結果
+  - `'has_all_scopes'`: 全てのスコープが許可されているか
+  - `'missing_scopes'`: 不足しているスコープのリスト
+  - `'current_scopes'`: 現在許可されているスコープ
+
+**使用例:**
+```python
+# 動画アップロードに必要なスコープをチェック
+scope_check = yt.check_oauth_scopes(['upload'])
+
+if scope_check['has_all_scopes']:
+    print("✅ 必要なスコープがすべて許可されています")
+    print("動画アップロードが可能です")
+else:
+    print("❌ 不足しているスコープがあります:")
+    for scope in scope_check['missing_scopes']:
+        print(f"  - {scope}")
+    print("再認証が必要です")
+
+# 複数スコープのチェック
+scope_check = yt.check_oauth_scopes(['upload', 'full'])
+print(f"現在のスコープ: {scope_check['current_scopes']}")
+```
+
+### refresh_oauth_token()
+
+```python
+def refresh_oauth_token(token_file=None) -> bool
+```
+
+OAuth認証トークンをリフレッシュします。
+
+**パラメータ:**
+- `token_file` (str): トークンファイル（オプション）
+
+**戻り値:**
+- `bool`: リフレッシュ成功フラグ
+
+**例外:**
+- `YouTubeAPIError`: OAuth認証が設定されていない、またはリフレッシュに失敗した場合
+
+**使用例:**
+```python
+try:
+    success = yt.refresh_oauth_token('my_token.pickle')
+    if success:
+        print("✅ トークンをリフレッシュしました")
+        print("OAuth機能が再び利用可能です")
+except YouTubeAPIError as e:
+    print(f"❌ リフレッシュ失敗: {e}")
+    print("💡 再認証が必要かもしれません")
+    
+    # 自動的に再認証を試行
+    try:
+        yt.setup_oauth_interactive('client_secrets.json', ['full'])
+        print("✅ 再認証が完了しました")
+    except YouTubeAPIError as e2:
+        print(f"❌ 再認証も失敗: {e2}")
+```
+
+### revoke_oauth_token()
+
+```python
+def revoke_oauth_token(token_file=None) -> bool
+```
+
+OAuth認証トークンを無効化し、認証を解除します。
+
+**パラメータ:**
+- `token_file` (str): 削除するトークンファイル（オプション）
+
+**戻り値:**
+- `bool`: 無効化成功フラグ
+
+**使用例:**
+```python
+success = yt.revoke_oauth_token('my_token.pickle')
+if success:
+    print("✅ 認証を解除しました")
+    print("📖 APIキーのみでの読み取り専用モードに切り替わりました")
+    
+    # OAuth必須機能は使用不可になる
+    try:
+        yt.get_my_channel()
+    except YouTubeAPIError as e:
+        print(f"予想通りエラー: {e}")
+```
+
+### create_oauth_config_template()
+
+```python
+@classmethod
+def create_oauth_config_template(output_file='oauth_config.json') -> str
+```
+
+OAuth設定テンプレートファイルを作成します。
+
+**パラメータ:**
+- `output_file` (str): 出力ファイル名（デフォルト: 'oauth_config.json'）
+
+**戻り値:**
+- `str`: 作成されたファイル名
+
+**使用例:**
+```python
+# 設定テンプレート作成
+template_file = YouTubeAPI.create_oauth_config_template('my_oauth_config.json')
+print(f"📄 設定テンプレートを作成: {template_file}")
+
+# 作成されたテンプレートの内容例
+"""
+{
+  "client_secrets_file": "client_secrets.json",
+  "scopes": ["readonly"],
+  "token_file": "youtube_token.pickle",
+  "port": 8080,
+  "auto_open_browser": true,
+  "_comment": {
+    "scopes": "利用可能: readonly, upload, full, force_ssl",
+    "client_secrets_file": "Google Cloud Consoleでダウンロードしたファイル",
+    "token_file": "認証トークンの保存先",
+    "port": "ローカルサーバーのポート番号",
+    "auto_open_browser": "認証時にブラウザを自動で開くか"
+  }
+}
+"""
+
+# テンプレートを編集後、設定ファイルとして使用
+import json
+with open('my_oauth_config.json', 'r') as f:
+    oauth_config = json.load(f)
+
+# 必要に応じて設定を変更
+oauth_config['client_secrets_file'] = 'path/to/your/client_secrets.json'
+oauth_config['scopes'] = ['full']  # 必要なスコープに変更
+
+# OAuth設定で初期化
+yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_config=oauth_config)
+```
+
+---
+
+## OAuth必須機能
+
+以下の機能はOAuth認証が必要です。事前に認証設定を完了してください。
+
+### get_my_channel()
+
+```python
+def get_my_channel() -> dict
+```
+
+自分のチャンネル情報を取得します（OAuth認証が必要）。
+
+**戻り値:**
+- `dict`: 自分のチャンネル情報
+
+**例外:**
+- `YouTubeAPIError`: OAuth認証が必要、またはチャンネルが見つからない場合
+
+**使用例:**
+```python
+try:
+    my_channel = yt.get_my_channel()
+    print(f"📺 チャンネル名: {my_channel['snippet']['title']}")
+    print(f"👥 登録者数: {my_channel['statistics']['subscriberCount']}")
+    print(f"📹 動画数: {my_channel['statistics']['videoCount']}")
+    print(f"👀 総再生回数: {my_channel['statistics']['viewCount']}")
+except YouTubeAPIError as e:
+    if "OAuth認証が必要" in str(e):
+        print("❌ 先にOAuth認証を設定してください")
+        print("💡 yt.setup_oauth_interactive('client_secrets.json') を実行")
+    else:
+        print(f"エラー: {e}")
+```
+
+### get_my_subscriptions()
+
+```python
+def get_my_subscriptions(max_results=50) -> list
+```
+
+自分のサブスクリプション一覧を取得します。
+
+**パラメータ:**
+- `max_results` (int): 最大取得件数（デフォルト: 50）
+
+**戻り値:**
+- `list`: サブスクライブしているチャンネルのリスト
+
+**使用例:**
+```python
+subscriptions = yt.get_my_subscriptions(100)
+print(f"📺 登録チャンネル数: {len(subscriptions)}個")
+
+print("\n最近登録したチャンネル:")
+for sub in subscriptions[:10]:  # 最初の10つを表示
+    channel_name = sub['snippet']['title']
+    channel_id = sub['snippet']['resourceId']['channelId']
+    published = sub['snippet']['publishedAt'][:10]  # 登録日
+    print(f"  📺 {channel_name} (登録日: {published})")
+    print(f"      ID: {channel_id}")
+```
+
+### get_my_playlists()
+
+```python
+def get_my_playlists(max_results=50) -> list
+```
+
+自分のプレイリスト一覧を取得します。
+
+**パラメータ:**
+- `max_results` (int): 最大取得件数（デフォルト: 50）
+
+**戻り値:**
+- `list`: プレイリスト情報のリスト
+
+**使用例:**
+```python
+playlists = yt.get_my_playlists()
+print(f"🎵 プレイリスト数: {len(playlists)}")
+
+print("\nプレイリスト一覧:")
+for playlist in playlists:
+    title = playlist['snippet']['title']
+    privacy = playlist['status']['privacyStatus']
+    item_count = playlist['contentDetails']['itemCount']
+    created = playlist['snippet']['publishedAt'][:10]
+    
+    privacy_icon = {
+        'public': '🌍',
+        'unlisted': '🔗', 
+        'private': '🔒'
+    }.get(privacy, '❓')
+    
+    print(f"  {privacy_icon} {title} ({item_count}本, {privacy})")
+    print(f"      作成日: {created}")
+```
+
+### get_my_videos()
+
+```python
+def get_my_videos(max_results=50) -> list
+```
+
+自分がアップロードした動画一覧を取得します。
+
+**パラメータ:**
+- `max_results` (int): 最大取得件数（デフォルト: 50）
+
+**戻り値:**
+- `list`: 動画情報のリスト
+
+**使用例:**
+```python
+my_videos = yt.get_my_videos(20)
+print(f"🎬 アップロード動画数: {len(my_videos)}")
+
+print("\n最新のアップロード動画:")
+for video in my_videos:
+    video_id = video['snippet']['resourceId']['videoId']
+    
+    # 詳細情報を取得
+    try:
+        video_details = yt.get_video_info(video_id)
+        title = video_details['snippet']['title']
+        views = int(video_details['statistics'].get('viewCount', 0))
+        likes = int(video_details['statistics'].get('likeCount', 0))
+        published = video_details['snippet']['publishedAt'][:10]
+        
+        print(f"  🎬 {title}")
+        print(f"      👀 {views:,}回再生 | 👍 {likes:,}いいね | 📅 {published}")
+        print(f"      🔗 https://youtube.com/watch?v={video_id}")
+    except YouTubeAPIError:
+        print(f"  ❌ 動画情報取得失敗: {video_id}")
+```
+
+### upload_video()
+
+```python
+def upload_video(title, description, tags=None, category_id="22", privacy_status="private", video_file=None) -> dict
+```
+
+動画をアップロードします。
+
+**パラメータ:**
+- `title` (str): 動画タイトル
+- `description` (str): 動画説明
+- `tags` (list): タグリスト（オプション）
+- `category_id` (str): カテゴリID（デフォルト: "22" = People & Blogs）
+- `privacy_status` (str): プライバシー設定（'private', 'public', 'unlisted'）
+- `video_file`: 動画ファイルオブジェクト（オプション）
+
+**戻り値:**
+- `dict`: アップロード結果
+
+**必要なスコープ:** `upload`
+
+**使用例:**
+```python
+# まずuploadスコープがあるかチェック
+scope_check = yt.check_oauth_scopes(['upload'])
+if not scope_check['has_all_scopes']:
+    print("❌ アップロードにはuploadスコープが必要です")
+    print("💡 再認証してください:")
+    print("yt.setup_oauth_interactive('client_secrets.json', scopes=['upload'])")
+else:
+    # 動画アップロード
+    from googleapiclient.http import MediaFileUpload
+    
+    # 動画ファイルの準備
+    media = MediaFileUpload(
+        'my_video.mp4', 
+        chunksize=-1,  # ファイル全体を一度にアップロード
+        resumable=True  # 再開可能アップロード
+    )
+    
+    try:
+        video = yt.upload_video(
+            title="Python チュートリアル動画",
+            description="""
+            初心者向けPython講座の第1回です。
+            
+            📚 この動画で学べること:
+            - Pythonの基本文法
+            - 変数と型
+            - 条件分岐とループ
+            
+            🔗 関連リンク:
+            - GitHub: https://github.com/username/repo
+            - 公式ドキュメント: https://docs.python.org/
+            """,
+            tags=["Python", "プログラミング", "チュートリアル", "初心者"],
+            category_id="27",  # Education
+            privacy_status="private",  # 最初はプライベートで
+            video_file=media
+        )
+        
+        video_id = video['id']
+        video_url = f"https://youtube.com/watch?v={video_id}"
+        
+        print("✅ 動画アップロード完了!")
+        print(f"🎬 タイトル: {video['snippet']['title']}")
+        print(f"🔗 URL: {video_url}")
+        print(f"🔒 プライバシー: {video['status']['privacyStatus']}")
+        
+    except YouTubeAPIError as e:
+        print(f"❌ アップロード失敗: {e}")
+```
+
+### create_playlist()
+
+```python
+def create_playlist(title, description="", privacy_status="private") -> dict
+```
+
+プレイリストを作成します。
+
+**パラメータ:**
+- `title` (str): プレイリストタイトル
+- `description` (str): プレイリスト説明（デフォルト: ""）
+- `privacy_status` (str): プライバシー設定（デフォルト: "private"）
+
+**戻り値:**
+- `dict`: 作成されたプレイリスト情報
+
+**使用例:**
+```python
+playlist = yt.create_playlist(
+    title="Python学習動画",
+    description="Python学習に役立つ動画集",
+    privacy_status="public"
+)
+print(f"✅ プレイリスト作成: {playlist['snippet']['title']}")
+print(f"🔗 ID: {playlist['id']}")
+```
+
+### subscribe_to_channel()
+
+```python
+def subscribe_to_channel(channel_id) -> dict
+```
+
+チャンネルをサブスクライブします。
+
+**パラメータ:**
+- `channel_id` (str): サブスクライブするチャンネルのID
+
+**戻り値:**
+- `dict`: サブスクライブ結果
+
+**使用例:**
+```python
+# 特定のチャンネルをサブスクライブ
+channel_id = "UC_x5XG1OV2P6uZZ5FSM9Ttw"
+
+try:
+    # チャンネル情報を先に取得
+    channel_info = yt.get_channel_info(channel_id)
+    channel_name = channel_info['snippet']['title']
+    
+    print(f"📺 {channel_name} をサブスクライブしますか？")
+    confirm = input("y/N: ")
+    
+    if confirm.lower() == 'y':
+        result = yt.subscribe_to_channel(channel_id)
+        print(f"✅ {channel_name} をサブスクライブしました")
+        
+        # サブスクライブ確認
+        subscriptions = yt.get_my_subscriptions(10)
+        for sub in subscriptions:
+            if sub['snippet']['resourceId']['channelId'] == channel_id:
+                sub_date = sub['snippet']['publishedAt'][:10]
+                print(f"✓ 確認済み: {sub['snippet']['title']} (登録日: {sub_date})")
+                break
+    else:
+        print("❌ サブスクライブをキャンセルしました")
+        
+except YouTubeAPIError as e:
+    if "already subscribed" in str(e).lower():
+        print(f"📺 {channel_name} は既にサブスクライブ済みです")
+    else:
+        print(f"❌ サブスクライブ失敗: {e}")
+```
+
+### OAuth認証設定の完全な例
+
+```python
+# OAuth認証の設定から使用まで完全な例
+
+from youtube_py3 import YouTubeAPI
+import os
+
+# 1. APIキーでライブラリを初期化
+api_key = os.getenv('YOUTUBE_API_KEY')
+yt = YouTubeAPI(api_key=api_key)
+
+# 2. OAuth設定テンプレートを作成（初回のみ）
+template_file = YouTubeAPI.create_oauth_config_template('oauth_config.json')
+print(f"📄 設定ファイルを作成: {template_file}")
+print("client_secrets.jsonファイルのパスを編集してください")
+
+# 3. 対話的にOAuth認証を設定
+try:
+    success = yt.setup_oauth_interactive(
+        client_secrets_file='client_secrets.json',
+        scopes=['full'],  # 全機能を使用
+        token_file='youtube_management_token.pickle'
+    )
+    
+    if not success:
+        print("❌ OAuth認証に失敗しました")
+        return
+        
+except YouTubeAPIError as e:
+    print(f"❌ OAuth設定エラー: {e}")
+    return
+
+print("✅ OAuth認証完了")
+    
+# 2. 自分のチャンネル分析
+print("\n🔍 チャンネル分析...")
+my_channel = yt.get_my_channel()
+channel_name = my_channel['snippet']['title']
+subscriber_count = int(my_channel['statistics']['subscriberCount'])
+
+print(f"📺 チャンネル名: {channel_name}")
+print(f"👥 登録者数: {subscriber_count:,}人")
+    
+# 3. 自分の動画パフォーマンス分析
+print("\n📊 動画パフォーマンス分析...")
+my_videos = yt.get_my_videos(10)  # 最新10本
+
+if my_videos:
+    total_views = 0
+    video_performances = []
+    
+    for video_item in my_videos:
+        video_id = video_item['snippet']['resourceId']['videoId']
+        try:
+            video_details = yt.get_video_info(video_id)
+            summary = yt.generate_video_summary(video_id)
+            
+            performance = {
+                'title': video_details['snippet']['title'],
+                'views': int(video_details['statistics'].get('viewCount', 0)),
+                'likes': int(video_details['statistics'].get('likeCount', 0)),
+                'comments': int(video_details['statistics'].get('commentCount', 0)),
+                'score': summary['analysis']['performance_score'],
+                'engagement': summary['analysis']['engagement_level']
+            }
+            video_performances.append(performance)
+            total_views += performance['views']
+            
+        except YouTubeAPIError:
+            continue
+
+    # トップパフォーマー表示
+    if video_performances:
+        top_video = max(video_performances, key=lambda x: x['score'])
+        avg_views = total_views / len(video_performances)
+        
+        print(f"🏆 トップパフォーマー:")
+        print(f"   📹 {top_video['title']}")
+        print(f"   👀 {top_video['views']:,}回再生")
+        print(f"   📊 スコア: {top_video['score']:.1f}/100")
+        print(f"   💝 エンゲージメント: {top_video['engagement']}")
+        print(f"📈 平均再生回数: {avg_views:,.0f}回")
+    
+
+# 4. プレイリスト管理
+print("\n🎵 プレイリスト管理...")
+playlists = yt.get_my_playlists()
+
+# 統計プレイリストを作成（存在しない場合）
+stats_playlist_name = "📊 パフォーマンス上位動画"
+stats_playlist = None
+
+for playlist in playlists:
+    if playlist['snippet']['title'] == stats_playlist_name:
+        stats_playlist = playlist
+        break
+
+if not stats_playlist and video_performances:
+    try:
+        stats_playlist = yt.create_playlist(
+            title=stats_playlist_name,
+            description="自動生成: パフォーマンススコアが高い動画のコレクション",
+            privacy_status="private"
+        )
+        print(f"✅ 統計プレイリスト作成: {stats_playlist_name}")
+    except YouTubeAPIError as e:
+        print(f"❌ プレイリスト作成失敗: {e}")
+
+# 5. コンテンツ戦略提案
+print("\n💡 コンテンツ戦略提案...")
+
+if video_performances:
+    # 高パフォーマンス動画の特徴分析
+    high_performers = [v for v in video_performances if v['score'] >= 70]
+    
+    if high_performers:
+        avg_high_views = sum(v['views'] for v in high_performers) / len(high_performers)
+        print(f"🎯 高パフォーマンス動画（スコア70+）: {len(high_performers)}本")
+        print(f"📊 平均再生回数: {avg_high_views:,.0f}回")
+        
+        # タグ分析（簡易版）
+        print("🏷️  成功パターンを分析して類似コンテンツの作成を検討してください")
+    else:
+        print("📈 パフォーマンス向上の余地があります")
+        print("💡 提案:")
+        print("   - より魅力的なタイトルとサムネイル")
+        print("   - 視聴者とのエンゲージメント向上")
+        print("   - 定期的な投稿スケジュール")
+
+# 6. サブスクリプション分析
+print("\n👥 サブスクリプション分析...")
+subscriptions = yt.get_my_subscriptions(20)
+
+if subscriptions:
+    print(f"📺 フォロー中のチャンネル: {len(subscriptions)}個")
+    
+    # 最近サブスクライブしたチャンネル
+    recent_subs = subscriptions[:5]
+    print("🆕 最近サブスクライブしたチャンネル:")
+    for sub in recent_subs:
+        name = sub['snippet']['title']
+        sub_date = sub['snippet']['publishedAt'][:10]
+        print(f"   📺 {name} ({sub_date})")
+    
+# 7. レポート生成
+print("\n📋 レポート生成...")
+
+report = {
+    'channel_name': channel_name,
+    'subscriber_count': subscriber_count,
+    'video_count': len(my_videos) if my_videos else 0,
+    'total_views': total_views if 'total_views' in locals() else 0,
+    'playlist_count': len(playlists),
+    'subscription_count': len(subscriptions) if subscriptions else 0,
+    'analysis_date': time.strftime('%Y-%m-%d %H:%M:%S')
+}
+
+# JSONレポート出力
+import json
+report_file = f"youtube_report_{time.strftime('%Y%m%d_%H%M%S')}.json"
+with open(report_file, 'w', encoding='utf-8') as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+
+print(f"📄 詳細レポートを保存: {report_file}")
+
+print("\n✅ YouTube管理分析完了!")
+print("📈 定期的にこの分析を実行して、チャンネルの成長を追跡しましょう")
+```
+
+このOAuth機能拡張により、YouTube.py3ライブラリは以下の能力を獲得しました：
+
+## 🚀 新機能ハイライト
+
+### **完全なYouTube API対応**
+- **読み取り専用**: APIキーでの基本情報取得
+- **書き込み対応**: OAuth認証での高度な操作
+- **個人データアクセス**: 自分のチャンネル、動画、プレイリスト管理
+
+### **セキュアな認証システム**
+- 自動OAuth設定
+- 手動認証フロー対応
+- トークン管理（リフレッシュ、無効化）
+- スコープベースの権限管理
+
+### **実用的な機能セット**
+- 動画アップロード
+- プレイリスト作成・管理
+- チャンネル登録管理
+- 包括的な分析とレポート
+
+**総メソッド数**: **108個から122個**に増加し、YouTube Data API v3の機能を完全網羅したライブラリとなりました。
+
+---
 
 ## 📋 完全機能リスト
 
@@ -2405,30 +3222,6 @@ channels_to_monitor = [
 - generate_video_summary(), _calculate_performance_score()
 - _classify_video_length(), _classify_engagement()
 
-### 📖 使用パターン集（10パターン）
 
-1. 基本的な情報取得
-2. 大量データの効率的な取得
-3. 検索結果の詳細分析
-4. 特定チャンネル内での検索
-5. プレイリスト管理の自動化
-6. エラーハンドリングの実装
-7. 包括的なチャンネル分析
-8. 高度な検索とフィルタリング
-9. データエクスポートとレポート生成
-10. チャンネル監視システム
-
-### 🔧 エラーハンドリング
-
-- 詳細なエラー分類とメッセージ
-- エラー種別に応じた推奨アクション
-- 実用的なエラー処理パターン
-
----
-
-このAPIリファレンスは、YouTube.py3ライブラリの全機能を網羅した完全なドキュメントです。各メソッドの詳細な説明、使用例、エラーハンドリング、実用的なパターン集まで含まれており、初心者から上級者まで幅広く活用できる内容となっています。
-
-**📚 次のステップ:**
-- [インストールガイド](installation.md)で環境設定
-- [使用例集](examples.md)で実践的な活用法を学習
-- [トラブルシューティング](troubleshooting.md)で問題解決方法を確認
+**最終更新**: 2025年 6月  
+**関連ドキュメント**: [README](README.md) | [インストールガイド](installation.md) | [トラブルシューティング](troubleshooting.md)

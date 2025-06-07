@@ -17,6 +17,11 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import logging
 import json
+import os
+import pickle
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.credentials import Credentials
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +140,7 @@ class YouTubeAPIError(Exception):
 
 
 class YouTubeAPI:
-    """YouTube Data API v3の簡易ラッパークラス
+    """YouTube Data API v3の簡易ラッパークラス（OAuth対応版）
 
     【このライブラリの目的】
     YouTube Data API v3は非常に複雑で、初心者には使いにくいAPIです。
@@ -169,74 +174,150 @@ class YouTubeAPI:
         print(channel["snippet"]["title"])
     """
 
-    def __init__(self, api_key):
+    # OAuth関連の定数
+    OAUTH_SCOPES = {
+        'readonly': 'https://www.googleapis.com/auth/youtube.readonly',
+        'upload': 'https://www.googleapis.com/auth/youtube.upload', 
+        'full': 'https://www.googleapis.com/auth/youtube',
+        'force_ssl': 'https://www.googleapis.com/auth/youtube.force-ssl'
+    }
+
+    def __init__(self, api_key=None, oauth_credentials=None, oauth_config=None):
         """YouTube APIクライアントを初期化
-
-        【重要】各ユーザーが個別に取得したAPIキーを使用してください。
-        このライブラリ自体はAPIキーを提供しません。
-
+        
         Args:
-            api_key (str): YouTube Data API v3のAPIキー
-                         Google Cloud Consoleから個別に取得してください
-
-        Raises:
-            YouTubeAPIError: APIキーが空またはAPI初期化に失敗した場合
-
+            api_key (str): YouTube Data API v3のAPIキー（読み取り専用操作用）
+            oauth_credentials: OAuth認証情報オブジェクト
+            oauth_config (dict): OAuth設定辞書
+                {
+                    'client_secrets_file': 'client_secrets.json',
+                    'scopes': ['full'],  # または具体的なスコープ
+                    'token_file': 'token.pickle',  # 認証トークン保存ファイル
+                    'port': 8080,  # ローカルサーバーポート
+                    'auto_open_browser': True  # ブラウザ自動起動
+                }
+        
         例:
-            # 環境変数を使用する方法（推奨）
-            import os
-            api_key = os.getenv('YOUTUBE_API_KEY')
-            yt = YouTubeAPI(api_key)
-
-            # 設定ファイルを使用する方法
-            import json
-            with open('config.json') as f:
-                config = json.load(f)
-            yt = YouTubeAPI(config['youtube_api_key'])
+            # APIキーのみ（読み取り専用）
+            yt = YouTubeAPI(api_key="YOUR_API_KEY")
+            
+            # OAuth設定で初期化
+            oauth_config = {
+                'client_secrets_file': 'client_secrets.json',
+                'scopes': ['full'],
+                'token_file': 'youtube_token.pickle'
+            }
+            yt = YouTubeAPI(api_key="YOUR_API_KEY", oauth_config=oauth_config)
         """
-        if not api_key:
-            raise YouTubeAPIError(
-                "APIキーが必要です。Google Cloud Consoleで個別に取得してください。\n"
-                "詳細: https://developers.google.com/youtube/v3/getting-started"
-            )
-
-        try:
-            # YouTube Data API v3クライアントを構築
-            self.youtube = build("youtube", "v3", developerKey=api_key)
-            self._api_key = api_key  # デバッグ用（ログには出力しない）
-        except Exception as e:
-            raise YouTubeAPIError(
-                f"YouTube API の初期化に失敗しました: {str(e)}\n"
-                "APIキーが正しいか確認してください。"
-            )
-
-    def _handle_http_error(self, e):
-        """HTTPエラーを適切なYouTubeAPIErrorに変換"""
-        error_details = {}
-        status_code = e.resp.status if hasattr(e, 'resp') else None
+        if not api_key and not oauth_credentials and not oauth_config:
+            raise YouTubeAPIError("APIキーまたはOAuth設定が必要です")
+        
+        self._api_key = api_key
+        self._oauth_credentials = oauth_credentials
+        self._oauth_config = oauth_config or {}
+        self._has_oauth = False
         
         try:
-            error_details = json.loads(e.content.decode())
-        except:
-            pass
-
-        error_code = error_details.get("error", {}).get("code")
-        
-        raise YouTubeAPIError(
-            f"API エラー: {e}",
-            error_code=error_code,
-            status_code=status_code,
-            details=error_details,
-        )
-
-    def _execute_request(self, request):
-        """APIリクエストを実行し、エラーハンドリングを行う"""
-        try:
-            return request.execute()
-        except HttpError as e:
-            self._handle_http_error(e)
+            # OAuth認証の処理
+            if oauth_config:
+                self._oauth_credentials = self._setup_oauth_credentials()
+                self._has_oauth = True
+            elif oauth_credentials:
+                self._oauth_credentials = oauth_credentials
+                self._has_oauth = True
+            
+            # YouTubeクライアントの構築
+            if self._has_oauth:
+                self.youtube = build("youtube", "v3", credentials=self._oauth_credentials)
+            else:
+                self.youtube = build("youtube", "v3", developerKey=api_key)
+                
         except Exception as e:
-            raise YouTubeAPIError(f"予期しないエラー: {e}")
+            raise YouTubeAPIError(f"YouTube API の初期化に失敗しました: {str(e)}")
+
+    def _setup_oauth_credentials(self):
+        """OAuth認証情報をセットアップ"""
+        config = self._oauth_config
+        client_secrets_file = config.get('client_secrets_file')
+        token_file = config.get('token_file', 'token.pickle')
+        scopes = self._resolve_scopes(config.get('scopes', ['readonly']))
+        
+        if not client_secrets_file:
+            raise YouTubeAPIError("client_secrets_file が指定されていません")
+        
+        credentials = None
+        
+        # 既存のトークンファイルから認証情報を読み込み
+        if os.path.exists(token_file):
+            try:
+                with open(token_file, 'rb') as token:
+                    credentials = pickle.load(token)
+            except Exception as e:
+                logger.warning(f"トークンファイルの読み込みに失敗: {e}")
+        
+        # 認証情報が無効または存在しない場合は新規認証
+        if not credentials or not credentials.valid:
+            if credentials and credentials.expired and credentials.refresh_token:
+                try:
+                    credentials.refresh(Request())
+                except Exception as e:
+                    logger.warning(f"トークンのリフレッシュに失敗: {e}")
+                    credentials = None
+            
+            if not credentials:
+                credentials = self._perform_oauth_flow(client_secrets_file, scopes)
+            
+            # トークンを保存
+            try:
+                with open(token_file, 'wb') as token:
+                    pickle.dump(credentials, token)
+            except Exception as e:
+                logger.warning(f"トークンファイルの保存に失敗: {e}")
+        
+        return credentials
+
+    def _resolve_scopes(self, scope_names):
+        """スコープ名を実際のスコープURLに変換"""
+        resolved_scopes = []
+        for scope_name in scope_names:
+            if scope_name in self.OAUTH_SCOPES:
+                resolved_scopes.append(self.OAUTH_SCOPES[scope_name])
+            elif scope_name.startswith('https://'):
+                resolved_scopes.append(scope_name)
+            else:
+                raise YouTubeAPIError(f"未知のスコープ: {scope_name}")
+        return resolved_scopes
+
+    def _perform_oauth_flow(self, client_secrets_file, scopes):
+        """OAuth認証フローを実行"""
+        config = self._oauth_config
+        port = config.get('port', 8080)
+        auto_open_browser = config.get('auto_open_browser', True)
+        
+        try:
+            flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, scopes)
+            
+            if auto_open_browser:
+                credentials = flow.run_local_server(
+                    port=port,
+                    prompt='consent',
+                    authorization_prompt_message='ブラウザでYouTube認証を完了してください...'
+                )
+            else:
+                credentials = flow.run_console()
+            
+            return credentials
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"OAuth認証に失敗しました: {str(e)}")
+
+    def _require_oauth(self, operation_name="この操作"):
+        """OAuth認証が必要な操作で呼び出すヘルパーメソッド"""
+        if not self._has_oauth:
+            raise YouTubeAPIError(
+                f"{operation_name}にはOAuth認証が必要です。\n"
+                "oauth_configパラメータでYouTubeAPIを初期化してください。"
+            )
 
     # ======== 基本的な情報取得メソッド ========
 
@@ -2886,3 +2967,480 @@ class YouTubeAPI:
             return "低い"
         else:
             return "非常に低い"
+
+    # ======== OAuth管理メソッド ========
+
+    def setup_oauth_interactive(self, client_secrets_file, scopes=None, token_file=None):
+        """対話的にOAuth認証をセットアップ
+        
+        Args:
+            client_secrets_file (str): クライアントシークレットファイルのパス
+            scopes (list): 必要なスコープ（デフォルト: ['readonly']）
+            token_file (str): トークン保存ファイル（デフォルト: 'youtube_token.pickle'）
+        
+        Returns:
+            bool: セットアップ成功フラグ
+        
+        例:
+            yt = YouTubeAPI(api_key="YOUR_API_KEY")
+            success = yt.setup_oauth_interactive(
+                'client_secrets.json',
+                scopes=['full'],
+                token_file='my_token.pickle'
+            )
+        """
+        if not scopes:
+            scopes = ['readonly']
+        
+        if not token_file:
+            token_file = 'youtube_token.pickle'
+        
+        try:
+            resolved_scopes = self._resolve_scopes(scopes)
+            
+            # OAuth設定を更新
+            self._oauth_config = {
+                'client_secrets_file': client_secrets_file,
+                'scopes': scopes,
+                'token_file': token_file,
+                'port': 8080,
+                'auto_open_browser': True
+            }
+            
+            # 認証実行
+            self._oauth_credentials = self._setup_oauth_credentials()
+            self._has_oauth = True
+            
+            # YouTubeクライアントを再構築
+            self.youtube = build("youtube", "v3", credentials=self._oauth_credentials)
+            
+            return True
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"OAuth設定に失敗しました: {str(e)}")
+
+    def get_oauth_authorization_url(self, client_secrets_file, scopes=None, state=None):
+        """OAuth認証URLを取得（手動認証用）
+        
+        Args:
+            client_secrets_file (str): クライアントシークレットファイル
+            scopes (list): 必要なスコープ
+            state (str): 状態パラメータ
+        
+        Returns:
+            tuple: (認証URL, flowオブジェクト)
+        
+        例:
+            auth_url, flow = yt.get_oauth_authorization_url('client_secrets.json', ['full'])
+            print(f"このURLにアクセスしてください: {auth_url}")
+        """
+        if not scopes:
+            scopes = ['readonly']
+        
+        resolved_scopes = self._resolve_scopes(scopes)
+        
+        try:
+            flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, resolved_scopes)
+            flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'  # アウトオブバンド
+            
+            auth_url, _ = flow.authorization_url(
+                prompt='consent',
+                state=state
+            )
+            
+            return auth_url, flow
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"認証URL生成に失敗しました: {str(e)}")
+
+    def complete_oauth_flow(self, flow, authorization_code, token_file=None):
+        """OAuth認証フローを完了（手動認証用）
+        
+        Args:
+            flow: get_oauth_authorization_urlで取得したflowオブジェクト
+            authorization_code (str): ブラウザで取得した認証コード
+            token_file (str): トークン保存ファイル
+        
+        Returns:
+            bool: 認証完了フラグ
+        
+        例:
+            auth_url, flow = yt.get_oauth_authorization_url('client_secrets.json')
+            # ユーザーがブラウザで認証後、認証コードを取得
+            code = input("認証コードを入力してください: ")
+            yt.complete_oauth_flow(flow, code, 'my_token.pickle')
+        """
+        try:
+            flow.fetch_token(code=authorization_code)
+            credentials = flow.credentials
+            
+            # 認証情報を設定
+            self._oauth_credentials = credentials
+            self._has_oauth = True
+            
+            # YouTubeクライアントを再構築
+            self.youtube = build("youtube", "v3", credentials=credentials)
+            
+            # トークンを保存
+            if token_file:
+                with open(token_file, 'wb') as token:
+                    pickle.dump(credentials, token)
+            
+            return True
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"OAuth認証完了に失敗しました: {str(e)}")
+
+    def refresh_oauth_token(self, token_file=None):
+        """OAuth認証トークンをリフレッシュ
+        
+        Args:
+            token_file (str): トークンファイル
+        
+        Returns:
+            bool: リフレッシュ成功フラグ
+        """
+        if not self._has_oauth:
+            raise YouTubeAPIError("OAuth認証が設定されていません")
+        
+        try:
+            if self._oauth_credentials and self._oauth_credentials.refresh_token:
+                self._oauth_credentials.refresh(Request())
+                
+                # トークンを保存
+                if token_file or self._oauth_config.get('token_file'):
+                    save_file = token_file or self._oauth_config['token_file']
+                    with open(save_file, 'wb') as token:
+                        pickle.dump(self._oauth_credentials, token)
+                
+                return True
+            else:
+                raise YouTubeAPIError("リフレッシュトークンが利用できません")
+                
+        except Exception as e:
+            raise YouTubeAPIError(f"トークンリフレッシュに失敗しました: {str(e)}")
+
+    def revoke_oauth_token(self, token_file=None):
+        """OAuth認証トークンを無効化
+        
+        Args:
+            token_file (str): 削除するトークンファイル
+        
+        Returns:
+            bool: 無効化成功フラグ
+        """
+        if not self._has_oauth:
+            return True
+        
+        try:
+            # トークンを無効化
+            if self._oauth_credentials:
+                import requests
+                requests.post(
+                    'https://oauth2.googleapis.com/revoke',
+                    params={'token': self._oauth_credentials.token},
+                    headers={'content-type': 'application/x-www-form-urlencoded'}
+                )
+            
+            # ローカルトークンファイルを削除
+            if token_file or self._oauth_config.get('token_file'):
+                file_to_delete = token_file or self._oauth_config['token_file']
+                if os.path.exists(file_to_delete):
+                    os.remove(file_to_delete)
+            
+            # OAuth設定をクリア
+            self._oauth_credentials = None
+            self._has_oauth = False
+            
+            # APIキーのみでクライアントを再構築
+            if self._api_key:
+                self.youtube = build("youtube", "v3", developerKey=self._api_key)
+            
+            return True
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"トークン無効化に失敗しました: {str(e)}")
+
+    def get_oauth_info(self):
+        """現在のOAuth認証情報を取得
+        
+        Returns:
+            dict: OAuth認証情報
+        """
+        if not self._has_oauth:
+            return {
+                'authenticated': False,
+                'scopes': [],
+                'expires_at': None,
+                'token_valid': False
+            }
+        
+        return {
+            'authenticated': True,
+            'scopes': getattr(self._oauth_credentials, 'scopes', []),
+            'expires_at': getattr(self._oauth_credentials, 'expiry', None),
+            'token_valid': self._oauth_credentials.valid if self._oauth_credentials else False,
+            'has_refresh_token': bool(getattr(self._oauth_credentials, 'refresh_token', None))
+        }
+
+    def check_oauth_scopes(self, required_scopes):
+        """必要なスコープが許可されているかチェック
+        
+        Args:
+            required_scopes (list): 必要なスコープリスト
+        
+        Returns:
+            dict: スコープチェック結果
+        """
+        if not self._has_oauth:
+            return {
+                'has_all_scopes': False,
+                'missing_scopes': required_scopes,
+                'current_scopes': []
+            }
+        
+        current_scopes = getattr(self._oauth_credentials, 'scopes', [])
+        resolved_required = self._resolve_scopes(required_scopes)
+        
+        missing_scopes = [scope for scope in resolved_required if scope not in current_scopes]
+        
+        return {
+            'has_all_scopes': len(missing_scopes) == 0,
+            'missing_scopes': missing_scopes,
+            'current_scopes': current_scopes
+        }
+
+    @classmethod
+    def create_oauth_config_template(cls, output_file='oauth_config.json'):
+        """OAuth設定テンプレートファイルを作成
+        
+        Args:
+            output_file (str): 出力ファイル名
+        
+        Returns:
+            str: 作成されたファイル名
+        """
+        import json
+        
+        template = {
+            "client_secrets_file": "client_secrets.json",
+            "scopes": ["readonly"],
+            "token_file": "youtube_token.pickle",
+            "port": 8080,
+            "auto_open_browser": True,
+            "_comment": {
+                "scopes": "利用可能: readonly, upload, full, force_ssl",
+                "client_secrets_file": "Google Cloud Consoleでダウンロードしたファイル",
+                "token_file": "認証トークンの保存先",
+                "port": "ローカルサーバーのポート番号",
+                "auto_open_browser": "認証時にブラウザを自動で開くか"
+            }
+        }
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(template, f, indent=2, ensure_ascii=False)
+        
+        return output_file
+
+    # OAuth認証が必要なメソッドに認証チェックを追加
+    def get_my_channel(self):
+        """自分のチャンネル情報を取得（OAuth認証が必要）"""
+        self._require_oauth("自分のチャンネル情報取得")
+        
+        request = self.youtube.channels().list(
+            part="snippet,statistics",
+            mine=True
+        )
+        response = self._execute_request(request)
+        
+        if not response["items"]:
+            raise YouTubeAPIError("チャンネルが見つかりません")
+        
+        return response["items"][0]
+
+    def upload_video(self, title, description, tags=None, category_id="22", privacy_status="private", video_file=None):
+        """動画をアップロード（OAuth認証が必要）"""
+        self._require_oauth("動画アップロード")
+        
+        # 必要なスコープをチェック
+        scope_check = self.check_oauth_scopes(['upload'])
+        if not scope_check['has_all_scopes']:
+            raise YouTubeAPIError(
+                f"動画アップロードには追加のスコープが必要です: {scope_check['missing_scopes']}"
+            )
+        
+        try:
+            body = {
+                "snippet": {
+                    "title": title,
+                    "description": description,
+                    "categoryId": category_id,
+                },
+                "status": {"privacyStatus": privacy_status},
+            }
+
+            if tags:
+                body["snippet"]["tags"] = tags
+
+            params = {"part": "snippet,status", "body": body}
+
+            if video_file:
+                params["media_body"] = video_file
+
+            request = self.youtube.videos().insert(**params)
+            response = request.execute()
+            return response
+        except Exception as e:
+            raise YouTubeAPIError(f"動画アップロードに失敗しました: {str(e)}")
+
+    def create_playlist(self, title, description="", privacy_status="private"):
+        """プレイリストを作成（OAuth認証が必要）"""
+        self._require_oauth("プレイリスト作成")
+        
+        try:
+            body = {
+                "snippet": {"title": title, "description": description},
+                "status": {"privacyStatus": privacy_status},
+            }
+
+            request = self.youtube.playlists().insert(part="snippet,status", body=body)
+            response = request.execute()
+            return response
+        except Exception as e:
+            raise YouTubeAPIError(f"プレイリスト作成に失敗しました: {str(e)}")
+
+    def subscribe_to_channel(self, channel_id):
+        """チャンネルをサブスクライブ（OAuth認証が必要）"""
+        self._require_oauth("チャンネルサブスクライブ")
+        
+        try:
+            body = {
+                "snippet": {
+                    "resourceId": {"kind": "youtube#channel", "channelId": channel_id}
+                }
+            }
+
+            request = self.youtube.subscriptions().insert(part="snippet", body=body)
+            response = request.execute()
+            return response
+        except Exception as e:
+            raise YouTubeAPIError(f"サブスクライブに失敗しました: {str(e)}")
+
+    def get_my_subscriptions(self, max_results=50):
+        """自分のサブスクリプション一覧を取得（OAuth認証が必要）
+        
+        Args:
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: サブスクリプション一覧
+        """
+        self._require_oauth("サブスクリプション一覧取得")
+        
+        subscriptions = []
+        next_page_token = None
+        
+        while len(subscriptions) < max_results:
+            params = {
+                'part': 'snippet',
+                'mine': True,
+                'maxResults': min(50, max_results - len(subscriptions))
+            }
+            
+            if next_page_token:
+                params['pageToken'] = next_page_token
+            
+            request = self.youtube.subscriptions().list(**params)
+            response = self._execute_request(request)
+            
+            subscriptions.extend(response['items'])
+            
+            next_page_token = response.get('nextPageToken')
+            if not next_page_token:
+                break
+        
+        return subscriptions[:max_results]
+
+    def get_my_playlists(self, max_results=50):
+        """自分のプレイリスト一覧を取得（OAuth認証が必要）
+        
+        Args:
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: プレイリスト一覧
+        """
+        self._require_oauth("プレイリスト一覧取得")
+        
+        playlists = []
+        next_page_token = None
+        
+        while len(playlists) < max_results:
+            params = {
+                'part': 'snippet,status',
+                'mine': True,
+                'maxResults': min(50, max_results - len(playlists))
+            }
+            
+            if next_page_token:
+                params['pageToken'] = next_page_token
+            
+            request = self.youtube.playlists().list(**params)
+            response = self._execute_request(request)
+            
+            playlists.extend(response['items'])
+            
+            next_page_token = response.get('nextPageToken')
+            if not next_page_token:
+                break
+        
+        return playlists[:max_results]
+
+    def get_my_videos(self, max_results=50):
+        """自分がアップロードした動画一覧を取得（OAuth認証が必要）
+        
+        Args:
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: 動画一覧
+        """
+        self._require_oauth("アップロード動画一覧取得")
+        
+        # 自分のチャンネルのアップロードプレイリストIDを取得
+        my_channel = self.get_my_channel()
+        channel_id = my_channel['id']
+        uploads_playlist_id = self.get_channel_upload_playlist(channel_id)
+        
+        # プレイリストから動画を取得
+        return self.get_playlist_videos(uploads_playlist_id, max_results=max_results)
+
+    def _handle_http_error(self, e):
+        """HTTPエラーを適切なYouTubeAPIErrorに変換"""
+        error_details = {}
+        status_code = e.resp.status if hasattr(e, 'resp') else None
+        
+        try:
+            error_details = json.loads(e.content.decode())
+        except:
+            pass
+
+        error_code = error_details.get("error", {}).get("code")
+        
+        raise YouTubeAPIError(
+            f"API エラー: {e}",
+            error_code=error_code,
+            status_code=status_code,
+            details=error_details,
+        )
+
+    def _execute_request(self, request):
+        """APIリクエストを実行し、エラーハンドリングを行う"""
+        try:
+            return request.execute()
+        except HttpError as e:
+            self._handle_http_error(e)
+        except Exception as e:
+            raise YouTubeAPIError(f"予期しないエラー: {str(e)}")
+
+
