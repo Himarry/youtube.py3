@@ -313,7 +313,7 @@ class YouTubeAPI:
 
     # ======== 検索メソッド ========
 
-    def search_videos(self, query, max_results=5, order="relevance"):
+    def search_videos(self, query, max_results=5, order="relevance", channel_id=None):
         """動画を検索
 
         指定されたキーワードで動画を検索し、結果を取得します。
@@ -322,20 +322,38 @@ class YouTubeAPI:
             query (str): 検索キーワード
             max_results (int): 取得する最大結果数 (デフォルト: 5)
             order (str): ソート順序 (デフォルト: 'relevance')
+            channel_id (str): 特定のチャンネル内で検索する場合のチャンネルID（オプション）
 
         Returns:
             list: 検索結果の辞書のリスト
 
         Raises:
             YouTubeAPIError: 検索に失敗した場合
+
+        使用例:
+            # 一般的な動画検索
+            videos = yt.search_videos("Python プログラミング", max_results=10)
+            
+            # 特定のチャンネル内で検索
+            videos = yt.search_videos(
+                "機械学習", 
+                max_results=20, 
+                channel_id="UC_x5XG1OV2P6uZZ5FSM9Ttw"
+            )
         """
-        request = self.youtube.search().list(
-            part="snippet",
-            q=query,
-            type="video",
-            maxResults=max_results,
-            order=order,
-        )
+        params = {
+            "part": "snippet",
+            "q": query,
+            "type": "video",
+            "maxResults": max_results,
+            "order": order,
+        }
+        
+        # チャンネルIDが指定された場合は追加
+        if channel_id:
+            params["channelId"] = channel_id
+        
+        request = self.youtube.search().list(**params)
         response = self._execute_request(request)
         return response["items"]
 
@@ -535,7 +553,7 @@ class YouTubeAPI:
             'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
         }
 
-    def search_videos_paginated(self, query, max_results=None, order="relevance", page_token=None, **filters):
+    def search_videos_paginated(self, query, max_results=None, order="relevance", page_token=None, channel_id=None, **filters):
         """動画検索（ページネーション対応）
         
         Args:
@@ -543,10 +561,19 @@ class YouTubeAPI:
             max_results (int): 最大取得件数（Noneの場合は50件）
             order (str): ソート順序
             page_token (str): ページトークン
+            channel_id (str): 特定のチャンネル内で検索する場合のチャンネルID（オプション）
             **filters: 追加フィルター
         
         Returns:
             dict: 検索結果とページ情報
+        
+        使用例:
+            # 特定のチャンネル内でページネーション検索
+            result = yt.search_videos_paginated(
+                "Python", 
+                max_results=25,
+                channel_id="UC_x5XG1OV2P6uZZ5FSM9Ttw"
+            )
         """
         if max_results is None:
             max_results = 50
@@ -561,6 +588,10 @@ class YouTubeAPI:
             'order': order,
             **filters
         }
+        
+        # チャンネルIDが指定された場合は追加
+        if channel_id:
+            params['channelId'] = channel_id
         
         if page_token:
             params['pageToken'] = page_token
@@ -722,12 +753,13 @@ class YouTubeAPI:
             max_total_results=max_results
         )
 
-    def search_all_videos(self, query, max_results=500):
+    def search_all_videos(self, query, max_results=500, channel_id=None):
         """動画を全件検索（簡略版）
         
         Args:
             query (str): 検索キーワード
             max_results (int): 最大取得件数
+            channel_id (str): 特定のチャンネル内で検索する場合のチャンネルID（オプション）
         
         Returns:
             list: 検索結果
@@ -735,7 +767,8 @@ class YouTubeAPI:
         return self.paginate_all_results(
             self.search_videos_paginated,
             query,
-            max_total_results=max_results
+            max_total_results=max_results,
+            channel_id=channel_id
         )
 
     def get_all_channel_videos(self, channel_id, max_results=500):
@@ -1905,3 +1938,429 @@ class YouTubeAPI:
             raise YouTubeAPIError(f"API エラー: {e}")
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {e}")
+
+    # ======== 便利なヘルパーメソッド（簡略化） ========
+
+    def get_basic_info(self, resource_id, resource_type="auto"):
+        """リソースの基本情報を自動判別して取得
+        
+        Args:
+            resource_id (str): YouTube ID（動画、チャンネル、プレイリスト）
+            resource_type (str): リソースタイプ（'auto', 'video', 'channel', 'playlist'）
+        
+        Returns:
+            dict: 基本情報
+        
+        例:
+            # 自動判別
+            info = yt.get_basic_info("dQw4w9WgXcQ")  # 動画として認識
+            info = yt.get_basic_info("UC_x5XG1OV2P6uZZ5FSM9Ttw")  # チャンネルとして認識
+        """
+        if resource_type == "auto":
+            # IDの長さと形式で自動判別
+            if len(resource_id) == 11:
+                resource_type = "video"
+            elif len(resource_id) == 24 and resource_id.startswith("UC"):
+                resource_type = "channel"
+            elif len(resource_id) in [18, 24, 34]:
+                resource_type = "playlist"
+            else:
+                raise YouTubeAPIError("リソースタイプを自動判別できませんでした")
+        
+        if resource_type == "video":
+            return self.get_video_info(resource_id)
+        elif resource_type == "channel":
+            return self.get_channel_info(resource_id)
+        elif resource_type == "playlist":
+            return self.get_playlist_info(resource_id)
+        else:
+            raise YouTubeAPIError(f"未対応のリソースタイプ: {resource_type}")
+
+    def quick_search(self, query, count=10, content_type="video"):
+        """クイック検索（結果を簡潔に返す）
+        
+        Args:
+            query (str): 検索キーワード
+            count (int): 取得件数
+            content_type (str): コンテンツタイプ（'video', 'channel', 'playlist', 'all'）
+        
+        Returns:
+            list: 簡潔な検索結果
+        
+        例:
+            results = yt.quick_search("Python プログラミング", count=5)
+            for result in results:
+                print(f"{result['title']} - {result['id']}")
+        """
+        if content_type == "all":
+            # 全タイプを検索
+            videos = self.search_videos(query, max_results=count//3 + 1)
+            channels = self.search_channels(query, max_results=count//3 + 1)
+            playlists = self.search_playlists(query, max_results=count//3 + 1)
+            
+            results = []
+            for item in videos + channels + playlists:
+                results.append({
+                    'id': item['id'].get('videoId') or item['id'].get('channelId') or item['id'].get('playlistId'),
+                    'title': item['snippet']['title'],
+                    'description': item['snippet']['description'][:100] + "..." if len(item['snippet']['description']) > 100 else item['snippet']['description'],
+                    'type': item['id']['kind'].split('#')[1],
+                    'thumbnail': item['snippet']['thumbnails']['default']['url']
+                })
+            return results[:count]
+        else:
+            # 指定タイプのみ検索
+            if content_type == "video":
+                items = self.search_videos(query, max_results=count)
+            elif content_type == "channel":
+                items = self.search_channels(query, max_results=count)
+            elif content_type == "playlist":
+                items = self.search_playlists(query, max_results=count)
+            else:
+                raise YouTubeAPIError(f"未対応のコンテンツタイプ: {content_type}")
+            
+            results = []
+            for item in items:
+                results.append({
+                    'id': item['id'].get('videoId') or item['id'].get('channelId') or item['id'].get('playlistId'),
+                    'title': item['snippet']['title'],
+                    'description': item['snippet']['description'][:100] + "..." if len(item['snippet']['description']) > 100 else item['snippet']['description'],
+                    'type': content_type,
+                    'thumbnail': item['snippet']['thumbnails']['default']['url']
+                })
+            return results
+
+    def get_stats_summary(self, resource_id, resource_type="auto"):
+        """統計情報のサマリーを取得
+        
+        Args:
+            resource_id (str): リソースID
+            resource_type (str): リソースタイプ
+        
+        Returns:
+            dict: 統計サマリー
+        
+        例:
+            stats = yt.get_stats_summary("dQw4w9WgXcQ")
+            print(f"再生回数: {stats['view_count']:,}")
+        """
+        if resource_type == "auto":
+            if len(resource_id) == 11:
+                resource_type = "video"
+            elif len(resource_id) == 24 and resource_id.startswith("UC"):
+                resource_type = "channel"
+        
+        if resource_type == "video":
+            stats = self.get_video_statistics_only(resource_id)
+            return {
+                'view_count': int(stats.get('viewCount', 0)),
+                'like_count': int(stats.get('likeCount', 0)),
+                'comment_count': int(stats.get('commentCount', 0)),
+                'type': 'video'
+            }
+        elif resource_type == "channel":
+            stats = self.get_channel_statistics_only(resource_id)
+            return {
+                'subscriber_count': int(stats.get('subscriberCount', 0)),
+                'video_count': int(stats.get('videoCount', 0)),
+                'view_count': int(stats.get('viewCount', 0)),
+                'type': 'channel'
+            }
+        else:
+            raise YouTubeAPIError(f"統計情報は動画とチャンネルのみ対応: {resource_type}")
+
+    def bulk_get_video_info(self, video_ids):
+        """複数の動画情報を一括取得
+        
+        Args:
+            video_ids (list): 動画IDのリスト（最大50件）
+        
+        Returns:
+            list: 動画情報のリスト
+        
+        例:
+            videos = yt.bulk_get_video_info(["dQw4w9WgXcQ", "jNQXAC9IVRw"])
+        """
+        if len(video_ids) > 50:
+            raise YouTubeAPIError("一度に取得できる動画は最大50件です")
+        
+        video_ids_str = ",".join(video_ids)
+        request = self.youtube.videos().list(
+            part="snippet,statistics",
+            id=video_ids_str
+        )
+        response = self._execute_request(request)
+        return response["items"]
+
+    def bulk_get_channel_info(self, channel_ids):
+        """複数のチャンネル情報を一括取得
+        
+        Args:
+            channel_ids (list): チャンネルIDのリスト（最大50件）
+        
+        Returns:
+            list: チャンネル情報のリスト
+        """
+        if len(channel_ids) > 50:
+            raise YouTubeAPIError("一度に取得できるチャンネルは最大50件です")
+        
+        channel_ids_str = ",".join(channel_ids)
+        request = self.youtube.channels().list(
+            part="snippet,statistics",
+            id=channel_ids_str
+        )
+        response = self._execute_request(request)
+        return response["items"]
+
+    def get_trending_videos(self, region_code="JP", category_id=None, max_results=50):
+        """トレンド動画を取得
+        
+        Args:
+            region_code (str): 地域コード
+            category_id (str): カテゴリID（オプション）
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: トレンド動画のリスト
+        """
+        params = {
+            'part': 'snippet,statistics',
+            'chart': 'mostPopular',
+            'regionCode': region_code,
+            'maxResults': max_results
+        }
+        
+        if category_id:
+            params['videoCategoryId'] = category_id
+        
+        request = self.youtube.videos().list(**params)
+        response = self._execute_request(request)
+        return response["items"]
+
+    def get_channel_from_username(self, username):
+        """ユーザー名からチャンネル情報を取得
+        
+        Args:
+            username (str): YouTubeユーザー名
+        
+        Returns:
+            dict: チャンネル情報
+        """
+        request = self.youtube.channels().list(
+            part="snippet,statistics",
+            forUsername=username
+        )
+        response = self._execute_request(request)
+        
+        if not response["items"]:
+            raise YouTubeAPIError(f"ユーザーが見つかりません: {username}")
+        
+        return response["items"][0]
+
+    def get_my_channel(self):
+        """自分のチャンネル情報を取得（OAuth認証が必要）
+        
+        Returns:
+            dict: 自分のチャンネル情報
+        """
+        request = self.youtube.channels().list(
+            part="snippet,statistics",
+            mine=True
+        )
+        response = self._execute_request(request)
+        
+        if not response["items"]:
+                       raise YouTubeAPIError("チャンネルが見つかりません（OAuth認証が必要です）")
+        
+        return response["items"][0]
+
+    def extract_video_id_from_url(self, youtube_url):
+        """YouTube URLから動画IDを抽出
+        
+        Args:
+            youtube_url (str): YouTube URL
+        
+        Returns:
+            str: 動画ID
+        
+        例:
+            video_id = yt.extract_video_id_from_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        """
+        import re
+        
+        patterns = [
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
+            r'youtube\.com/v/([a-zA-Z0-9_-]{11})',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, youtube_url)
+            if match:
+                return match.group(1)
+        
+        raise YouTubeAPIError(f"有効なYouTube URLではありません: {youtube_url}")
+
+    def extract_playlist_id_from_url(self, youtube_url):
+        """YouTube URLからプレイリストIDを抽出
+        
+        Args:
+            youtube_url (str): YouTube URL
+        
+        Returns:
+            str: プレイリストID
+        """
+        import re
+        
+        pattern = r'[?&]list=([a-zA-Z0-9_-]+)'
+        match = re.search(pattern, youtube_url)
+        
+        if match:
+            return match.group(1)
+        
+        raise YouTubeAPIError(f"プレイリストIDが見つかりません: {youtube_url}")
+
+    def get_video_duration_seconds(self, video_id):
+        """動画の長さを秒で取得
+        
+        Args:
+            video_id (str): 動画ID
+        
+        Returns:
+            int: 動画の長さ（秒）
+        """
+        import re
+        
+        request = self.youtube.videos().list(
+            part="contentDetails",
+            id=video_id
+        )
+        response = self._execute_request(request)
+        
+        if not response["items"]:
+            raise YouTubeAPIError(f"動画が見つかりません: {video_id}")
+        
+        duration = response["items"][0]["contentDetails"]["duration"]
+        
+        # ISO 8601形式（PT4M13S）を秒に変換
+        match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration)
+        if match:
+            hours = int(match.group(1) or 0)
+            minutes = int(match.group(2) or 0)
+            seconds = int(match.group(3) or 0)
+            return hours * 3600 + minutes * 60 + seconds
+        
+        return 0
+
+    def format_view_count(self, view_count):
+        """再生回数を読みやすい形式にフォーマット
+        
+        Args:
+            view_count (int): 再生回数
+        
+        Returns:
+            str: フォーマット済み文字列
+        
+        例:
+            formatted = yt.format_view_count(1234567)  # "123.5万回"
+        """
+        view_count = int(view_count)
+        
+        if view_count >= 100000000:  # 1億以上
+            return f"{view_count / 100000000:.1f}億回"
+        elif view_count >= 10000:  # 1万以上
+            return f"{view_count / 10000:.1f}万回"
+        else:
+            return f"{view_count:,}回"
+
+    def format_subscriber_count(self, subscriber_count):
+        """登録者数を読みやすい形式にフォーマット
+        
+        Args:
+            subscriber_count (int): 登録者数
+        
+        Returns:
+            str: フォーマット済み文字列
+        """
+        subscriber_count = int(subscriber_count)
+        
+        if subscriber_count >= 100000000:  # 1億以上
+            return f"{subscriber_count / 100000000:.1f}億人"
+        elif subscriber_count >= 10000:  # 1万以上
+            return f"{subscriber_count / 10000:.1f}万人"
+        else:
+            return f"{subscriber_count:,}人"
+
+    def search_and_get_details(self, query, max_results=10, include_stats=True):
+        """検索して詳細情報も一緒に取得
+        
+        Args:
+            query (str): 検索キーワード
+            max_results (int): 最大結果数
+            include_stats (bool): 統計情報を含めるか
+        
+        Returns:
+            list: 詳細情報付きの検索結果
+        
+        例:
+            results = yt.search_and_get_details("Python", max_results=5)
+            for video in results:
+                print(f"{video['title']} - {video['view_count']}回再生")
+        """
+        # まず検索を実行
+        search_results = self.search_videos(query, max_results=max_results)
+        
+        # 動画IDを抽出
+        video_ids = [item['id']['videoId'] for item in search_results]
+        
+        if not include_stats:
+            return search_results
+        
+        # 統計情報を一括取得
+        detailed_videos = self.bulk_get_video_info(video_ids)
+        
+        # 検索結果と統計情報をマージ
+        enhanced_results = []
+        for search_item, detail_item in zip(search_results, detailed_videos):
+            enhanced_item = search_item.copy()
+            enhanced_item['statistics'] = detail_item['statistics']
+            enhanced_item['view_count'] = int(detail_item['statistics'].get('viewCount', 0))
+            enhanced_item['like_count'] = int(detail_item['statistics'].get('likeCount', 0))
+            enhanced_item['comment_count'] = int(detail_item['statistics'].get('commentCount', 0))
+            enhanced_results.append(enhanced_item)
+        
+        return enhanced_results
+
+    def get_channel_upload_playlist(self, channel_id):
+        """チャンネルのアップロードプレイリストIDを取得
+        
+        Args:
+            channel_id (str): チャンネルID
+        
+        Returns:
+            str: アップロードプレイリストID
+        """
+        request = self.youtube.channels().list(
+            part="contentDetails",
+            id=channel_id
+        )
+        response = self._execute_request(request)
+        
+        if not response["items"]:
+            raise YouTubeAPIError(f"チャンネルが見つかりません: {channel_id}")
+        
+        uploads_playlist_id = response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        return uploads_playlist_id
+
+    def get_latest_videos_from_channel(self, channel_id, max_results=10):
+        """チャンネルの最新動画を効率的に取得
+        
+        Args:
+            channel_id (str): チャンネルID
+            max_results (int): 最大取得件数
+        
+        Returns:
+            list: 最新動画のリスト
+        """
+        # アップロードプレイリストから取得（より効率的）
+        uploads_playlist_id = self.get_channel_upload_playlist(channel_id)
+        return self.get_playlist_videos(uploads_playlist_id, max_results=max_results)
