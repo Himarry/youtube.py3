@@ -1770,7 +1770,9 @@ print("コメントを承認しました")</code></pre>
           <h2>チャンネル管理</h2>
 
           <div class="api-method">
-            <h3>update_channel_info(title=None, description=None, keywords=None)</h3>
+            <h3>
+              update_channel_info(title=None, description=None, keywords=None)
+            </h3>
             <div class="method-info">
               <p class="description">チャンネル情報を更新します。</p>
               <h4>パラメータ</h4>
@@ -1846,7 +1848,9 @@ print("チャンネルバナーを設定しました")</code></pre>
           <div class="api-method">
             <h3>get_channel_sections(channel_id)</h3>
             <div class="method-info">
-              <p class="description">チャンネルのセクション情報を取得します。</p>
+              <p class="description">
+                チャンネルのセクション情報を取得します。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -1875,7 +1879,10 @@ for section in sections:
           <h2>動画管理</h2>
 
           <div class="api-method">
-            <h3>upload_video(video_path, title, description="", tags=None, privacy_status="private")</h3>
+            <h3>
+              upload_video(video_path, title, description="", tags=None,
+              privacy_status="private")
+            </h3>
             <div class="method-info">
               <p class="description">動画をアップロードします。</p>
               <h4>パラメータ</h4>
@@ -1921,7 +1928,10 @@ print(f"動画をアップロードしました: {video['id']}")</code></pre>
           </div>
 
           <div class="api-method">
-            <h3>update_video(video_id, title=None, description=None, tags=None, privacy_status=None)</h3>
+            <h3>
+              update_video(video_id, title=None, description=None, tags=None,
+              privacy_status=None)
+            </h3>
             <div class="method-info">
               <p class="description">動画情報を更新します。</p>
               <h4>パラメータ</h4>
@@ -2091,7 +2101,10 @@ print("字幕をダウンロードしました")</code></pre>
           </div>
 
           <div class="api-method">
-            <h3>upload_caption(video_id, caption_file, language="ja", name="日本語")</h3>
+            <h3>
+              upload_caption(video_id, caption_file, language="ja",
+              name="日本語")
+            </h3>
             <div class="method-info">
               <p class="description">動画に字幕をアップロードします。</p>
               <h4>パラメータ</h4>
@@ -2301,7 +2314,10 @@ for level in levels:
           <h2>透かし管理</h2>
 
           <div class="api-method">
-            <h3>set_watermark(image_path, timing_type="offsetFromStart", timing_duration=15000)</h3>
+            <h3>
+              set_watermark(image_path, timing_type="offsetFromStart",
+              timing_duration=15000)
+            </h3>
             <div class="method-info">
               <p class="description">チャンネルに透かしを設定します。</p>
               <h4>パラメータ</h4>
@@ -2376,7 +2392,9 @@ for category in categories:
           <div class="api-method">
             <h3>get_regions()</h3>
             <div class="method-info">
-              <p class="description">サポートされている地域一覧を取得します。</p>
+              <p class="description">
+                サポートされている地域一覧を取得します。
+              </p>
               <div class="code-example">
                 <h4>使用例</h4>
                 <pre><code>regions = yt.get_regions()
@@ -2389,7 +2407,9 @@ for region in regions:
           <div class="api-method">
             <h3>get_languages()</h3>
             <div class="method-info">
-              <p class="description">サポートされている言語一覧を取得します。</p>
+              <p class="description">
+                サポートされている言語一覧を取得します。
+              </p>
               <div class="code-example">
                 <h4>使用例</h4>
                 <pre><code>languages = yt.get_languages()
@@ -2423,7 +2443,9 @@ for language in languages:
                 <tr>
                   <td><code>metrics</code></td>
                   <td>list, optional</td>
-                  <td>比較する指標 ['views', 'likes', 'comments', 'duration']</td>
+                  <td>
+                    比較する指標 ['views', 'likes', 'comments', 'duration']
+                  </td>
                 </tr>
               </table>
               <div class="code-example">
@@ -2436,9 +2458,14 @@ print(f"最高エンゲージメント: {comparison['rankings']['engagement'][0]
           </div>
 
           <div class="api-method">
-            <h3>analyze_channel_performance(channel_id, days_back=30, max_videos=50)</h3>
+            <h3>
+              analyze_channel_performance(channel_id, days_back=30,
+              max_videos=50)
+            </h3>
             <div class="method-info">
-              <p class="description">チャンネルのパフォーマンス分析を行います。</p>
+              <p class="description">
+                チャンネルのパフォーマンス分析を行います。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2478,9 +2505,14 @@ print(f"📈 成長率: {analysis['growth_rate']:.1f}%")</code></pre>
           <h2>データエクスポート機能</h2>
 
           <div class="api-method">
-            <h3>export_search_results_to_csv(query, filename=None, max_results=100)</h3>
+            <h3>
+              export_search_results_to_csv(query, filename=None,
+              max_results=100)
+            </h3>
             <div class="method-info">
-              <p class="description">検索結果をCSVファイルにエクスポートします。</p>
+              <p class="description">
+                検索結果をCSVファイルにエクスポートします。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2512,9 +2544,14 @@ print(f"📄 CSVファイルを作成しました: {filename}")</code></pre>
           </div>
 
           <div class="api-method">
-            <h3>export_channel_videos_to_json(channel_id, filename=None, max_videos=100)</h3>
+            <h3>
+              export_channel_videos_to_json(channel_id, filename=None,
+              max_videos=100)
+            </h3>
             <div class="method-info">
-              <p class="description">チャンネルの動画情報をJSONファイルにエクスポートします。</p>
+              <p class="description">
+                チャンネルの動画情報をJSONファイルにエクスポートします。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2556,9 +2593,13 @@ print(f"📋 JSONデータファイル: {json_file}")</code></pre>
           <h2>高度な検索機能</h2>
 
           <div class="api-method">
-            <h3>search_videos_advanced(query, filters=None, sort_by="relevance")</h3>
+            <h3>
+              search_videos_advanced(query, filters=None, sort_by="relevance")
+            </h3>
             <div class="method-info">
-              <p class="description">高度な動画検索（複数フィルター対応）を行います。</p>
+              <p class="description">
+                高度な動画検索（複数フィルター対応）を行います。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2584,7 +2625,9 @@ print(f"📋 JSONデータファイル: {json_file}")</code></pre>
                 <li><code>min_views</code>: 最小再生回数</li>
                 <li><code>published_after</code>: 公開日以降（YYYY-MM-DD）</li>
                 <li><code>published_before</code>: 公開日以前（YYYY-MM-DD）</li>
-                <li><code>channel_subscriber_min</code>: チャンネル最小登録者数</li>
+                <li>
+                  <code>channel_subscriber_min</code>: チャンネル最小登録者数
+                </li>
               </ul>
               <div class="code-example">
                 <h4>使用例</h4>
@@ -2621,7 +2664,10 @@ for video in results[:5]:
           <h2>バッチ処理機能</h2>
 
           <div class="api-method">
-            <h3>batch_analyze_channels(channel_ids, metrics=["subscribers", "videos", "views"])</h3>
+            <h3>
+              batch_analyze_channels(channel_ids, metrics=["subscribers",
+              "videos", "views"])
+            </h3>
             <div class="method-info">
               <p class="description">複数チャンネルの一括分析を行います。</p>
               <h4>パラメータ</h4>
@@ -2681,9 +2727,13 @@ for rank, channel in enumerate(analysis['rankings']['subscribers'][:3], 1):
           <h2>通知・監視機能</h2>
 
           <div class="api-method">
-            <h3>monitor_channel_for_new_videos(channel_id, last_video_id=None)</h3>
+            <h3>
+              monitor_channel_for_new_videos(channel_id, last_video_id=None)
+            </h3>
             <div class="method-info">
-              <p class="description">チャンネルの新しい動画をチェックします。</p>
+              <p class="description">
+                チャンネルの新しい動画をチェックします。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2770,9 +2820,18 @@ def continuous_monitor(channel_id, check_interval=3600):
               </table>
               <h4>戻り値の構造</h4>
               <ul>
-                <li><code>basic_info</code>: 基本情報（タイトル、チャンネル、公開日等）</li>
-                <li><code>performance</code>: パフォーマンス指標（再生数、いいね数等）</li>
-                <li><code>content</code>: コンテンツ情報（説明文、タグ、カテゴリ等）</li>
+                <li>
+                  <code>basic_info</code>:
+                  基本情報（タイトル、チャンネル、公開日等）
+                </li>
+                <li>
+                  <code>performance</code>:
+                  パフォーマンス指標（再生数、いいね数等）
+                </li>
+                <li>
+                  <code>content</code>:
+                  コンテンツ情報（説明文、タグ、カテゴリ等）
+                </li>
                 <li><code>analysis</code>: 分析結果（スコア、分類等）</li>
               </ul>
               <div class="code-example">
@@ -2799,9 +2858,13 @@ print(f"エンゲージメントレベル: {summary['analysis']['engagement_leve
           </div>
 
           <div class="api-method">
-            <h3>calculate_performance_score(views, likes, comments, duration)</h3>
+            <h3>
+              calculate_performance_score(views, likes, comments, duration)
+            </h3>
             <div class="method-info">
-              <p class="description">動画のパフォーマンススコアを計算します（0-100）。</p>
+              <p class="description">
+                動画のパフォーマンススコアを計算します（0-100）。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2919,7 +2982,9 @@ else:
           <div class="api-method">
             <h3>format_duration(seconds)</h3>
             <div class="method-info">
-              <p class="description">秒数を人間が読みやすい形式にフォーマットします。</p>
+              <p class="description">
+                秒数を人間が読みやすい形式にフォーマットします。
+              </p>
               <h4>パラメータ</h4>
               <table class="params-table">
                 <tr>
@@ -2974,13 +3039,14 @@ print(f"\n{report['recommendations']}")</code></pre>
             </div>
           </div>
         </div>
-
       </section>
     </main>
 
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2025 YouTube API リファレンス - 完全版. All rights reserved.</p>
+        <p>
+          &copy; 2025 YouTube API リファレンス - 完全版. All rights reserved.
+        </p>
         <p>108の実装済みメソッドを完全網羅 | 最終更新: 2025年6月</p>
       </div>
     </footer>
