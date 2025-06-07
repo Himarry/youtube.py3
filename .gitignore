@@ -4,7 +4,6 @@ setup.py
 release.py
 release.bat
 release.lnk
-youtube_py3.py
 youtube_py3.pyx
 # APIキー関連
 *api_key*
