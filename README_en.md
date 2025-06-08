@@ -62,13 +62,10 @@ For detailed documentation, please refer to the `docs/` directory:
 
 ### Permissions
 - ✅ Commercial use
-- ✅ Use as a library (import and integrate)
 
 ### Prohibitions
 - ❌ Modification or enhancement
-- ❌ Redistribution or distribution (selling or distributing the library itself)
-- ⚠️ The entry point of this package is compiled as a binary to prevent tampering, so the source is not directly viewable.
-- ⚠️ If you encounter issues or have feature requests, please open an issue on GitHub with a detailed description.
+- ❌ Redistribution or distribution 
 
 For full details, see the [LICENSE](LICENSE) file.
 
