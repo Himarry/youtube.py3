@@ -2,7 +2,7 @@
 YouTube.py3 - Binary version
 """
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 __author__ = "Chihalu"
 
 # バイナリモジュールから主要クラスをインポート

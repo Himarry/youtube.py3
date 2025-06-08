@@ -143,12 +143,6 @@ for video in videos:
 
 このプロジェクトはMITライセンスの下で公開されています。
 
-## 📞 サポート
-
-- **GitHub Issues**: [プロジェクトページ](https://github.com/yourusername/youtube-py3/issues)
-- **Discord**: [コミュニティサーバー](https://discord.gg/youtube-py3)
-- **Email**: support@youtube-py3.com
-
 ---
 
 **最終更新**: 2024年12月

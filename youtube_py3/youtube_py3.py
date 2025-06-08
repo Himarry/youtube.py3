@@ -813,7 +813,6 @@ class YouTubeAPI:
             next_page_token = result.get('nextPageToken')
             if not next_page_token:
                 break
-        
         return all_items
 
     # ======== 簡略化メソッド（通常のリスト取得版） ========
@@ -899,46 +898,6 @@ class YouTubeAPI:
             video_id,
             max_total_results=max_results
         )
-
-    def search_playlists_paginated(self, query, max_results=None, order="relevance", page_token=None, **filters):
-        """プレイリスト検索（ページネーション対応）
-        
-        Args:
-            query (str): 検索キーワード
-            max_results (int): 最大取得件数
-            order (str): ソート順序
-            page_token (str): ページトークン
-            **filters: 追加フィルター
-        
-        Returns:
-            dict: 検索結果とページ情報
-        """
-        if max_results is None:
-            max_results = 50
-        
-        max_results = min(max_results, 50)
-        
-        params = {
-            'part': 'snippet',
-            'q': query,
-            'type': 'playlist',
-            'maxResults': max_results,
-            'order': order,
-            **filters
-        }
-        
-        if page_token:
-            params['pageToken'] = page_token
-        
-        request = self.youtube.search().list(**params)
-        response = self._execute_request(request)
-        
-        return {
-            'items': response.get('items', []),
-            'nextPageToken': response.get('nextPageToken'),
-            'totalResults': response.get('pageInfo', {}).get('totalResults', 0),
-            'resultsPerPage': response.get('pageInfo', {}).get('resultsPerPage', 0)
-        }
 
     # ======== 統計情報取得メソッド ========
 
@@ -2179,6 +2138,7 @@ class YouTubeAPI:
         Args:
             channel_ids (list): チャンネルIDのリスト（最大50件）
         
+
         Returns:
             list: チャンネル情報のリスト
         """
@@ -3443,4 +3403,263 @@ class YouTubeAPI:
         except Exception as e:
             raise YouTubeAPIError(f"予期しないエラー: {str(e)}")
 
+    def get_total_comments_excluding_channels(self, video_id, exclude_channels=None, max_comments=1000):
+        """指定したチャンネルを除いた動画の総コメント数を取得"""
+        if exclude_channels is None:
+            exclude_channels = []
+        
+        try:
+            # 動画のコメントを取得
+            all_comments = self.get_all_comments(video_id, max_results=max_comments)
+            
+            if not all_comments:
+                return {
+                    'total_comments': 0,
+                    'excluded_comments': 0,
+                    'original_total': 0,
+                    'exclude_channels': [],
+                    'filtered_comments': []
+                }
+            
+            # 除外チャンネルの情報を正規化
+            exclude_channel_ids = set()
+            exclude_channel_names = set()
+            
+            for channel in exclude_channels:
+                if len(channel) == 24 and channel.startswith('UC'):
+                    exclude_channel_ids.add(channel)
+                else:
+                    exclude_channel_names.add(channel.lower())
+            
+            # コメントをフィルタリング
+            filtered_comments = []
+            excluded_count = 0
+            exclude_info = []
+            
+            for comment in all_comments:
+                comment_snippet = comment['snippet']['topLevelComment']['snippet']
+                author_channel_id = comment_snippet.get('authorChannelId', {}).get('value', '')
+                author_name = comment_snippet.get('authorDisplayName', '')
+                
+                # 除外対象かチェック
+                should_exclude = False
+                exclude_reason = None
+                
+                if author_channel_id and author_channel_id in exclude_channel_ids:
+                    should_exclude = True
+                    exclude_reason = f"チャンネルID: {author_channel_id}"
+                elif author_name.lower() in exclude_channel_names:
+                    should_exclude = True
+                    exclude_reason = f"チャンネル名: {author_name}"
+                
+                if should_exclude:
+                    excluded_count += 1
+                    exclude_info.append({
+                        'channel_id': author_channel_id,
+                        'channel_name': author_name,
+                        'reason': exclude_reason,
+                        'comment_id': comment['id']
+                    })
+                else:
+                    filtered_comments.append(comment)
+            
+            # 除外されたチャンネルの統計
+            excluded_channels_summary = {}
+            for info in exclude_info:
+                channel_key = info['channel_id'] if info['channel_id'] else info['channel_name']
+                if channel_key not in excluded_channels_summary:
+                    excluded_channels_summary[channel_key] = {
+                        'channel_id': info['channel_id'],
+                        'channel_name': info['channel_name'],
+                        'excluded_count': 0
+                    }
+                excluded_channels_summary[channel_key]['excluded_count'] += 1
+            
+            return {
+                'total_comments': len(filtered_comments),
+                'excluded_comments': excluded_count,
+                'original_total': len(all_comments),
+                'exclude_channels': list(excluded_channels_summary.values()),
+                'filtered_comments': filtered_comments,
+                'filter_summary': {
+                    'exclusion_rate': (excluded_count / len(all_comments) * 100) if all_comments else 0,
+                    'most_excluded_channel': max(excluded_channels_summary.values(), 
+                                               key=lambda x: x['excluded_count']) if excluded_channels_summary else None
+                }
+            }
+            
+        except YouTubeAPIError:
+            raise
+        except Exception as e:
+            raise YouTubeAPIError(f"コメント集計処理でエラーが発生しました: {str(e)}")
 
+    def get_comments_statistics_by_channel(self, video_id, max_comments=1000):
+        """動画のコメントをチャンネル別に統計"""
+        try:
+            all_comments = self.get_all_comments(video_id, max_results=max_comments)
+            
+            if not all_comments:
+                return {
+                    'total_comments': 0,
+                    'channel_stats': [],
+                    'top_commenters': [],
+                    'unique_channels': 0
+                }
+            
+            # チャンネル別統計を集計
+            channel_stats = {}
+            
+            for comment in all_comments:
+                comment_snippet = comment['snippet']['topLevelComment']['snippet']
+                author_channel_id = comment_snippet.get('authorChannelId', {}).get('value', 'unknown')
+                author_name = comment_snippet.get('authorDisplayName', 'Unknown')
+                
+                channel_key = author_channel_id if author_channel_id != 'unknown' else author_name
+                
+                if channel_key not in channel_stats:
+                    channel_stats[channel_key] = {
+                        'channel_id': author_channel_id if author_channel_id != 'unknown' else None,
+                        'channel_name': author_name,
+                        'comment_count': 0,
+                        'total_likes': 0,
+                        'comments': []
+                    }
+                
+                comment_likes = int(comment_snippet.get('likeCount', 0))
+                channel_stats[channel_key]['comment_count'] += 1
+                channel_stats[channel_key]['total_likes'] += comment_likes
+                channel_stats[channel_key]['comments'].append({
+                    'comment_id': comment['id'],
+                    'text': comment_snippet['textDisplay'][:100] + "..." if len(comment_snippet['textDisplay']) > 100 else comment_snippet['textDisplay'],
+                    'likes': comment_likes,
+                    'published_at': comment_snippet['publishedAt']
+                })
+            
+            # 統計をリストに変換してソート
+            stats_list = list(channel_stats.values())
+            stats_list.sort(key=lambda x: x['comment_count'], reverse=True)
+            
+            # 上位コメント投稿者（コメント数でソート）
+            top_commenters = stats_list[:10]
+            
+            return {
+                'total_comments': len(all_comments),
+                'channel_stats': stats_list,
+                'top_commenters': top_commenters,
+                'unique_channels': len(channel_stats),
+                'analysis': {
+                    'average_comments_per_channel': len(all_comments) / len(channel_stats) if channel_stats else 0,
+                    'most_active_commenter': stats_list[0] if stats_list else None,
+                    'single_comment_channels': len([c for c in stats_list if c['comment_count'] == 1])
+                }
+            }
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"コメント統計処理でエラーが発生しました: {str(e)}")
+
+    def filter_comments_by_criteria(self, video_id, filters=None, max_comments=1000):
+        """複数条件でコメントをフィルタリング"""
+        from datetime import datetime
+        
+        if filters is None:
+            filters = {}
+        
+        try:
+            all_comments = self.get_all_comments(video_id, max_results=max_comments)
+            
+            if not all_comments:
+                return {
+                    'filtered_comments': [],
+                    'total_filtered': 0,
+                    'original_total': 0,
+                    'filter_stats': {}
+                }
+            
+            filtered_comments = []
+            filter_stats = {
+                'excluded_by_channel': 0,
+                'excluded_by_likes': 0,
+                'excluded_by_keywords': 0,
+                'excluded_by_date': 0
+            }
+            
+            # フィルター条件を準備
+            exclude_channels = set(filters.get('exclude_channels', []))
+            min_likes = filters.get('min_likes', 0)
+            max_likes = filters.get('max_likes', float('inf'))
+            include_keywords = [kw.lower() for kw in filters.get('keywords_include', [])]
+            exclude_keywords = [kw.lower() for kw in filters.get('keywords_exclude', [])]
+            
+            date_after = None
+            date_before = None
+            if filters.get('date_after'):
+                date_after = datetime.fromisoformat(filters['date_after'])
+            if filters.get('date_before'):
+                date_before = datetime.fromisoformat(filters['date_before'])
+            
+            for comment in all_comments:
+                comment_snippet = comment['snippet']['topLevelComment']['snippet']
+                should_include = True
+                
+                # チャンネル除外チェック
+                author_channel_id = comment_snippet.get('authorChannelId', {}).get('value', '')
+                author_name = comment_snippet.get('authorDisplayName', '')
+                
+                if (author_channel_id in exclude_channels or 
+                    author_name in exclude_channels):
+                    should_include = False
+                    filter_stats['excluded_by_channel'] += 1
+                    continue
+                
+                # いいね数チェック
+                likes = int(comment_snippet.get('likeCount', 0))
+                if likes < min_likes or likes > max_likes:
+                    should_include = False
+                    filter_stats['excluded_by_likes'] += 1
+                    continue
+                
+                # キーワードチェック
+                comment_text = comment_snippet['textDisplay'].lower()
+                
+                # 含むべきキーワードチェック
+                if include_keywords and not any(kw in comment_text for kw in include_keywords):
+                    should_include = False
+                    filter_stats['excluded_by_keywords'] += 1
+                    continue
+                
+                # 除外キーワードチェック
+                if exclude_keywords and any(kw in comment_text for kw in exclude_keywords):
+                    should_include = False
+                    filter_stats['excluded_by_keywords'] += 1
+                    continue
+                
+                # 日付チェック
+                comment_date = datetime.fromisoformat(comment_snippet['publishedAt'].replace('Z', '+00:00'))
+                
+                if date_after and comment_date < date_after.replace(tzinfo=comment_date.tzinfo):
+                    should_include = False
+                    filter_stats['excluded_by_date'] += 1
+                    continue
+                
+                if date_before and comment_date > date_before.replace(tzinfo=comment_date.tzinfo):
+                    should_include = False
+                    filter_stats['excluded_by_date'] += 1
+                    continue
+                
+                if should_include:
+                    filtered_comments.append(comment)
+            
+            return {
+                'filtered_comments': filtered_comments,
+                'total_filtered': len(filtered_comments),
+                'original_total': len(all_comments),
+                'filter_stats': filter_stats,
+                'filtering_summary': {
+                    'retention_rate': (len(filtered_comments) / len(all_comments) * 100) if all_comments else 0,
+                    'total_excluded': sum(filter_stats.values()),
+                    'applied_filters': list(filters.keys())
+                }
+            }
+            
+        except Exception as e:
+            raise YouTubeAPIError(f"コメントフィルタリング処理でエラーが発生しました: {str(e)}")
