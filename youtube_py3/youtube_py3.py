@@ -38,7 +38,7 @@ from .sentiment_analysis import SentimentAnalysisMixin
 from .monitoring import MonitoringMixin
 from .content_optimization import ContentOptimizationMixin
 from .data_export import DataExportMixin
-
+from datetime import datetime
 
 class YouTubeAPI(YouTubeAPIBase, InfoRetrievalMixin, SearchMixin, PaginationMixin, 
                  CommentsMixin, PlaylistMixin, ChannelMixin, VideoMixin, HelperMixin):
