@@ -73,3 +73,10 @@ pyproject.toml
 __init__.pyx
 __init__.py.backup
 __init__.py
+
+# Nuitka build artifacts
+src/youtube_py3/*.build/
+
+twine upload dist/*.whl
+
+youtube_py3/
