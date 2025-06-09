@@ -1,3 +1,5 @@
+__all__ = ["YouTube"]
+
 # Nuitkaでバイナリ化したモジュール用の__init__.py
 import youtube_py3.base
 import youtube_py3.videos
