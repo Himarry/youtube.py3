@@ -38,3 +38,32 @@ class Channels:
             next_token = resp.get('nextPageToken')
             if not next_token or fetched >= max_results:
                 break
+
+    def search_channels(self, query: str, max_results: int = 5):
+        """
+        チャンネル名で検索し、チャンネル情報リストを返す
+        """
+        params = {
+            'q': query,
+            'part': 'snippet',
+            'type': 'channel',
+            'maxResults': max_results,
+        }
+        return self.client._request('search', params)
+
+    def get_latest_video_id(self, channel_id: str) -> Optional[str]:
+        """
+        指定チャンネルの最新動画IDを取得
+        """
+        params = {
+            'part': 'snippet',
+            'channelId': channel_id,
+            'order': 'date',
+            'type': 'video',
+            'maxResults': 1,
+        }
+        resp = self.client._request('search', params)
+        items = resp.get('items', [])
+        if items:
+            return items[0]['id']['videoId']
+        return None

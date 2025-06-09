@@ -10,9 +10,11 @@ from .channels import Channels
 from .playlists import Playlists
 from .search import Search
 from .comments import Comments
+from .config_util import ConfigUtil
+from .oauth_util import OAuthUtil
 
 # バージョン情報
-__version__ = "4.2.1"
+__version__ = "5.0.0"
 __author__ = "Himarry"
 __license__ = "MIT"
 __description__ = "YouTube Data API v3 Python Wrapper Library"
@@ -32,3 +34,5 @@ class YouTube:
         self.playlists = Playlists(self.client)
         self.search = Search(self.client)
         self.comments = Comments(self.client)
+        self.config_manager = ConfigUtil()
+        self.oauth_manager = OAuthUtil()
