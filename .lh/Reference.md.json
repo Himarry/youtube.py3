@@ -1,0 +1,18 @@
+{
+    "sourceFile": "Reference.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1749525609347,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1749525609347,
+            "name": "Commit-0",
+            "content": "# YouTube.py3 Reference (簡易版)\r\n\r\n## 機能一覧\r\n- 動画情報取得（videos）\r\n- チャンネル情報取得（channels）\r\n- プレイリスト情報取得（playlists）\r\n- 動画検索（search）\r\n- コメント取得・フィルタ・ページネーション（comments）\r\n\r\n## 使い方例\r\n```python\r\nimport youtube_py3\r\n\r\nyt = youtube_py3.YouTube(api_key=\"YOUR_API_KEY\")\r\n# 動画情報取得\r\ninfo = yt.videos.get_video(\"動画ID\")\r\n# コメント（視聴者のみ・返信なし・ページネーション）\r\nfor c in yt.comments.get_viewer_comments_paginated(\"動画ID\", \"チャンネルID\"):\r\n    print(c)\r\n```\r\n\r\n## 注意\r\n- APIキーが必要\r\n- 詳細は各メソッドのdocstring参照\r\n"
+        }
+    ]
+}

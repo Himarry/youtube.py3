@@ -1,0 +1,18 @@
+{
+    "sourceFile": ".gitignore",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1749510649059,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1749510649059,
+            "name": "Commit-0",
+            "content": "# 環境変数ファイル\r\n.env\r\nsetup.py\r\nrelease.py\r\nrelease.bat\r\nrelease.lnk\r\nyoutube_py3.pyx\r\nyoutube_py3.py\r\n# APIキー関連\r\n*api_key*\r\n*secret*\r\n*credentials*\r\nupdate.bat\r\nupdate.lnk\r\n2964877.ico\r\n# Python関連\r\n__pycache__/\r\n*.py[cod]\r\n*$py.class\r\n*.so\r\n.Python\r\nbuild/\r\ndevelop-eggs/\r\ndist/\r\ndownloads/\r\neggs/\r\n.eggs/\r\nlib/\r\nlib64/\r\nparts/\r\nsdist/\r\nvar/\r\nwheels/\r\n*.egg-info/\r\n.installed.cfg\r\n*.egg\r\nMANIFEST\r\n\r\n# 仮想環境\r\nvenv/\r\nenv/\r\nENV/\r\n\r\n# IDE関連\r\n.vscode/\r\n.idea/\r\n*.swp\r\n*.swo\r\n\r\n# OS関連\r\n.DS_Store\r\nThumbs.db\r\n\r\n# ログファイル\r\n*.log\r\n\r\n# テスト関連\r\n.pytest_cache/\r\n.coverage\r\nhtmlcov/\r\n\r\n# 一時ファイル\r\n*.tmp\r\n*.bak\r\n.history\r\n\r\nversion_check.py\r\npublish.py\r\ngithub_binary.py\r\nbuild_binary.py\r\nバイナリ化.bat\r\npyproject.toml\r\n__init__.pyx\r\n__init__.py.backup\r\n__init__.py\r\n\r\n# Nuitka build artifacts\r\nsrc/youtube_py3/*.build/\r\n\r\ntwine upload dist/*.whl\r\n\r\nyoutube_py3/\r\n"
+        }
+    ]
+}

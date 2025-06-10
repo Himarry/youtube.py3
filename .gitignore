@@ -62,7 +62,7 @@ htmlcov/
 # 一時ファイル
 *.tmp
 *.bak
-
+.history
 
 version_check.py
 publish.py

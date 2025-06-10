@@ -1,0 +1,18 @@
+{
+    "sourceFile": "README.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1749525610635,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1749525610635,
+            "name": "Commit-0",
+            "content": "<!--\r\nYouTube.py3 - YouTube Data API v3 高機能Pythonラッパー\r\n-->\r\n\r\n# YouTube.py3\r\n\r\n> **YouTube Data API v3 高機能Pythonラッパー**  \r\n> プライベート用途・自動化・CLI・バイナリ配布にも最適\r\n\r\n[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\r\n[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)\r\n[![YouTube API v3](https://img.shields.io/badge/YouTube%20API-v3-red)](https://developers.google.com/youtube/v3)\r\n\r\n---\r\n\r\n## 概要\r\n\r\nYouTube Data API v3 の主要機能（動画・チャンネル・プレイリスト・検索・コメント取得など）を  \r\n**シンプルかつ強力なインターフェース**で扱えるPythonラッパーです。\r\n\r\n- **APIキーのみで利用可能**\r\n- **CLI/自動化/バイナリ配布にも対応**\r\n- **型ヒント・例外設計・ページネーション・OAuthユーティリティも完備**\r\n\r\n---\r\n\r\n## 主な機能\r\n\r\n| 機能カテゴリ   | サポート内容例                                 |\r\n|:--------------|:----------------------------------------------|\r\n| 動画          | 単体/複数動画情報取得、ページネーション        |\r\n| チャンネル    | 検索・情報取得・最新動画ID取得                 |\r\n| プレイリスト  | 一覧・詳細取得、ページネーション               |\r\n| 検索          | 動画/チャンネル検索、ページネーション          |\r\n| コメント      | 視聴者のみ・返信なし・ページネーション対応     |\r\n| 設定管理      | APIキー・チャンネルID・設定ファイル管理         |\r\n| OAuth         | Google OAuth2認証フロー（ユーティリティ付属）   |\r\n| 例外設計      | API/認証/クォータ/各機能ごとに細分化           |\r\n\r\n---\r\n\r\n## インストール\r\n\r\n```sh\r\npip install -r requirements.txt\r\n```\r\n\r\n---\r\n\r\n## クイックスタート\r\n\r\n```python\r\nimport youtube_py3\r\n\r\nyt = youtube_py3.YouTube(api_key=\"YOUR_API_KEY\")\r\n# 動画情報取得\r\ninfo = yt.videos.get_video(\"動画ID\")\r\n# コメント（視聴者のみ・返信なし・ページネーション）\r\nfor c in yt.comments.get_viewer_comments_paginated(\"動画ID\", \"チャンネルID\"):\r\n    print(c)\r\n```\r\n\r\n> **詳細な使い方・APIリファレンスは [Reference.md](Reference.md) をご覧ください。**\r\n\r\n---\r\n\r\n## 注意事項\r\n\r\n- **APIキーはGoogle Cloud Consoleで取得してください**\r\n- 利用にはYouTube Data API v3の利用規約・クォータ制限が適用されます\r\n- 本ライブラリはプライベート用途を想定しています\r\n\r\n## バイナリ配布・ソース非公開について\r\n\r\n- 本パッケージは Nuitka によりビルドされたバイナリ（.pyd）のみを配布し、ソースコード（.py）は一切含まれません。\r\n- ソースコードを公開・オープンソース化する予定はありません。\r\n- コード内容を確認したい場合は、ご自身でリバースエンジニアリングを行ってください（自己責任でお願いします）。\r\n\r\n---\r\n\r\n## ライセンス\r\n\r\nMIT License\r\n\r\n---"
+        }
+    ]
+}

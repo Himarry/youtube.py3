@@ -1,0 +1,18 @@
+{
+    "sourceFile": "README_en.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1749525614619,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1749525614619,
+            "name": "Commit-0",
+            "content": "<!--\r\nYouTube.py3 - High-Functionality Python Wrapper for YouTube Data API v3\r\n-->\r\n\r\n# YouTube.py3\r\n\r\n> **High-functionality Python wrapper for YouTube Data API v3**  \r\n> Ideal for private use, automation, CLI, and binary distribution\r\n\r\n[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)\r\n[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)\r\n[![YouTube API v3](https://img.shields.io/badge/YouTube%20API-v3-red)](https://developers.google.com/youtube/v3)\r\n\r\n---\r\n\r\n## Overview\r\n\r\nA Python wrapper for YouTube Data API v3 that provides a **simple yet powerful interface** for all major features (videos, channels, playlists, search, comments, etc).\r\n\r\n- **Works with API key only**\r\n- **Supports CLI/automation/binary distribution**\r\n- **Includes type hints, robust exceptions, pagination, and OAuth utilities**\r\n\r\n---\r\n\r\n## Main Features\r\n\r\n| Category      | Supported Features Example                        |\r\n|:-------------|:--------------------------------------------------|\r\n| Videos       | Single/multiple video info, pagination            |\r\n| Channels     | Search, info, get latest video ID                 |\r\n| Playlists    | List/details, pagination                          |\r\n| Search       | Video/channel search, pagination                  |\r\n| Comments     | Viewer only, no replies, pagination               |\r\n| Config Mgmt  | API key, channel ID, config file management       |\r\n| OAuth        | Google OAuth2 flow (utility included)             |\r\n| Exceptions   | Fine-grained for API/auth/quota/feature errors    |\r\n\r\n---\r\n\r\n## Installation\r\n\r\n```sh\r\npip install -r requirements.txt\r\n```\r\n\r\n---\r\n\r\n## Quick Start\r\n\r\n```python\r\nimport youtube_py3\r\n\r\nyt = youtube_py3.YouTube(api_key=\"YOUR_API_KEY\")\r\n# Get video info\r\ninfo = yt.videos.get_video(\"VIDEO_ID\")\r\n# Get comments (viewer only, no replies, paginated)\r\nfor c in yt.comments.get_viewer_comments_paginated(\"VIDEO_ID\", \"CHANNEL_ID\"):\r\n    print(c)\r\n```\r\n\r\n> **See [Reference.md](Reference.md) for detailed usage and API reference.**\r\n\r\n---\r\n\r\n## Notes\r\n\r\n- **Get your API key from Google Cloud Console**\r\n- YouTube Data API v3 terms and quota limits apply\r\n- This library is intended for private use\r\n\r\n## Binary Distribution & Source Code Policy\r\n\r\n- This package is distributed as binaries (.pyd built with Nuitka) only; no source code (.py) is included.\r\n- There are no plans to make the source code public or open source.\r\n- If you want to see the code, you must reverse-engineer it yourself (at your own risk).\r\n\r\n---\r\n\r\n## License\r\n\r\nMIT License\r\n\r\n---\r\n"
+        }
+    ]
+}

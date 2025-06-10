@@ -1,0 +1,18 @@
+{
+    "sourceFile": "test_protected_run.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1749525621653,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1749525621653,
+            "name": "Commit-0",
+            "content": "import sys\r\nimport os\r\nsys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))\r\n\r\nimport youtube_py3\r\n\r\nif __name__ == \"__main__\":\r\n    # テスト用APIキー（ダミー値）\r\n    api_key = \"AIzaSyDUMMYKEY\"\r\n    yt = youtube_py3.YouTube(api_key)\r\n    print(\"YouTubeラッパーのインスタンス化成功\")\r\n    # 例: チャンネル情報取得（実際のAPIキーでのみ動作）\r\n    # print(yt.channels.get_channel(\"UC_x5XG1OV2P6uZZ5FSM9Ttw\"))\r\n"
+        }
+    ]
+}

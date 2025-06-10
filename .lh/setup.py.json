@@ -1,0 +1,26 @@
+{
+    "sourceFile": "setup.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1749526030106,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1749526040375,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,9 +28,8 @@\n     version=\"5.0.4\",\r\n     author=\"Himarry\",\r\n     author_email=\"\",\r\n     description=\"YouTube Data API v3の簡単で使いやすいPythonラッパーライブラリ\",\r\n-    long_description=read_readme(),\r\n     long_description_content_type=\"text/markdown\",\r\n     url=\"https://github.com/chihalu/youtube-py3\",\r\n     package_dir={\"\": \"src\"},\r\n     packages=find_packages(where=\"src\"),\r\n"
+                },
+                {
+                    "date": 1749526053838,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,9 +24,9 @@\n     return []\r\n \r\n setup(\r\n     name=\"youtube_py3\",\r\n-    version=\"5.0.4\",\r\n+    version=\"5.0.0\",\r\n     author=\"Himarry\",\r\n     author_email=\"\",\r\n     description=\"YouTube Data API v3の簡単で使いやすいPythonラッパーライブラリ\",\r\n     long_description_content_type=\"text/markdown\",\r\n"
+                }
+            ],
+            "date": 1749526030106,
+            "name": "Commit-0",
+            "content": "\"\"\"\r\nYouTube.py3 セットアップスクリプト\r\n\"\"\"\r\n\r\nfrom setuptools import setup, find_packages\r\nimport os\r\n\r\n# requirements.txtを読み込み\r\ndef read_requirements():\r\n    req_path = os.path.join(os.path.dirname(__file__), 'requirements.txt')\r\n    if os.path.exists(req_path):\r\n        with open(req_path, 'r', encoding='utf-8') as f:\r\n            lines = f.readlines()\r\n            # コメント行と空行を除外し、必須パッケージのみ抽出\r\n            requirements = []\r\n            for line in lines:\r\n                line = line.strip()\r\n                if line and not line.startswith('#') and not line.startswith('pytest') and not line.startswith('sphinx'):\r\n                    # オプション依存関係にはコメントを付ける\r\n                    if any(pkg in line for pkg in ['opencv-python', 'pillow', 'numpy', 'schedule']):\r\n                        continue  # オプション依存関係は別途定義\r\n                    requirements.append(line)\r\n            return requirements\r\n    return []\r\n\r\nsetup(\r\n    name=\"youtube_py3\",\r\n    version=\"5.0.4\",\r\n    author=\"Himarry\",\r\n    author_email=\"\",\r\n    description=\"YouTube Data API v3の簡単で使いやすいPythonラッパーライブラリ\",\r\n    long_description=read_readme(),\r\n    long_description_content_type=\"text/markdown\",\r\n    url=\"https://github.com/chihalu/youtube-py3\",\r\n    package_dir={\"\": \"src\"},\r\n    packages=find_packages(where=\"src\"),\r\n    include_package_data=True,\r\n    # .pyd, .pyi, __init__.py だけを含める\r\n    package_data={\"youtube_py3\": [\"*.pyd\", \"*.pyi\", \"__init__.py\"]},\r\n    classifiers=[\r\n        \"Development Status :: 4 - Beta\",\r\n        \"Intended Audience :: Developers\",\r\n        \"License :: OSI Approved :: MIT License\",\r\n        \"Operating System :: OS Independent\",\r\n        \"Programming Language :: Python :: 3\",\r\n        \"Programming Language :: Python :: 3.7\",\r\n        \"Programming Language :: Python :: 3.8\",\r\n        \"Programming Language :: Python :: 3.9\",\r\n        \"Programming Language :: Python :: 3.10\",\r\n        \"Programming Language :: Python :: 3.11\",\r\n        \"Topic :: Software Development :: Libraries :: Python Modules\",\r\n        \"Topic :: Internet :: WWW/HTTP :: Dynamic Content\",\r\n        \"Topic :: Multimedia :: Video\",\r\n    ],\r\n    python_requires=\">=3.7\",\r\n    install_requires=read_requirements(),\r\n    extras_require={\r\n        \"media\": [\"opencv-python>=4.5.0\", \"pillow>=8.0.0\", \"numpy>=1.20.0\"],\r\n        \"automation\": [\"schedule>=1.1.0\"],\r\n        \"full\": [\r\n            \"opencv-python>=4.5.0\",\r\n            \"pillow>=8.0.0\", \r\n            \"numpy>=1.20.0\",\r\n            \"schedule>=1.1.0\",\r\n            \"requests>=2.25.0\"\r\n        ],\r\n        \"dev\": [\r\n            \"pytest>=6.0.0\",\r\n            \"pytest-cov>=2.0.0\",\r\n            \"sphinx>=4.0.0\"\r\n        ]\r\n    },\r\n    keywords=\"youtube api wrapper python data-api video channel playlist comments\",\r\n    project_urls={\r\n        \"Bug Reports\": \"https://github.com/chihalu/youtube-py3/issues\",\r\n        \"Source\": \"https://github.com/chihalu/youtube-py3\",\r\n        \"Documentation\": \"https://github.com/chihalu/youtube-py3/wiki\",\r\n    },\r\n)\r\n"
+        }
+    ]
+}
